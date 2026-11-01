@@ -1,4 +1,4 @@
-/* ANIHUB - partículas flutuantes na tela de boas-vindas. Carrega depois do script.js. */
+/* ZANIME - partículas flutuantes na tela de boas-vindas. Carrega depois do script.js. */
 (function(){
 "use strict";
 var w=document.getElementById("welcome"),cv=document.getElementById("wfx");

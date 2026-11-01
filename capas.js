@@ -1,4 +1,4 @@
-/* ANIHUB - capas em alta qualidade na janela de detalhes e no banner. Carrega depois do script.js. */
+/* ZANIME - capas em alta qualidade na janela de detalhes e no banner. Carrega depois do script.js. */
 (function(){
 "use strict";
 // o MyAnimeList guarda uma versão grande de cada capa: o mesmo endereço com "l" antes do .jpg

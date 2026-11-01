@@ -1,4 +1,4 @@
-/* ANIHUB - janela de escolha de gênero (botão "Gêneros"). Carrega depois do script.js. */
+/* ZANIME - janela de escolha de gênero (botão "Gêneros"). Carrega depois do script.js. */
 (function(){
 "use strict";
 var ov=document.createElement("div");ov.className="overlay";ov.id="gov";

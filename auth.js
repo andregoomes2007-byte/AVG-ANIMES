@@ -1,4 +1,4 @@
-/* ANIHUB - login e sincronização (Supabase). Carrega depois do script.js. */
+/* ZANIME - login e sincronização (Supabase). Carrega depois do script.js. */
 (function(){
 "use strict";
 var C=window.AVG_CONFIG,btn=document.getElementById("acc");

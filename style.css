@@ -406,3 +406,19 @@ html.intro,html.intro body{overflow:hidden;height:100%}
 
 /* filtros centralizados */
 .panel,.filters{justify-content:center}
+
+/* ===== logotipo ZANIME: Z azul com brilho + ANIME prateado ===== */
+.zlogo{display:inline-flex;align-items:baseline;font-family:"Exo 2","Dela Gothic One",sans-serif;font-style:italic;font-weight:900;text-transform:uppercase;letter-spacing:.01em;line-height:.95;background:none;animation:none;filter:none;text-shadow:none}
+.zlogo .z{font-size:1.3em;margin-right:.03em;padding-right:.06em;background:linear-gradient(135deg,#9BD8FF 0%,#3F8CFF 50%,#1246B8 100%);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 12px rgba(63,140,255,.75))}
+.zlogo .a{padding-right:.06em;background:linear-gradient(180deg,#fff 10%,#dbe3f7 60%,#aab6d8 100%);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 3px 10px rgba(0,5,30,.55))}
+h1.zlogo{font-size:clamp(44px,8.5vw,92px);margin:0 0 4px}
+.w-title.zlogo{justify-content:center;font-size:clamp(46px,10vw,100px);letter-spacing:.01em;padding-left:0;margin:6px 0 8px}
+.slogan{margin:0 0 14px;font-family:"Exo 2","Zen Maru Gothic",sans-serif;font-style:italic;font-weight:500;text-transform:uppercase;letter-spacing:.2em;font-size:clamp(11px,1.7vw,15px);color:rgba(255,255,255,.88)}
+.slogan b{color:#4DA3FF;font-weight:800;text-shadow:0 0 10px rgba(77,163,255,.7)}
+.w-slogan{display:block;margin:0 auto 20px;padding-bottom:16px;position:relative}
+.w-slogan::after{content:"";position:absolute;left:50%;bottom:0;width:min(260px,60%);height:2px;transform:translateX(-50%);background:linear-gradient(90deg,transparent,#3F8CFF,transparent);box-shadow:0 0 12px rgba(63,140,255,.8)}
+@media (max-width:640px){.slogan{letter-spacing:.12em}}
+
+/* rodapé */
+.foot p{margin:0}
+.foot .foot-note{margin-top:10px;font-size:12px;font-weight:700;letter-spacing:.24em;text-transform:uppercase;color:var(--ink);opacity:.85}

@@ -3,18 +3,19 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>ANIHUB</title>
+<title>ZANIME: do Z ao A, todo anime em um só lugar</title>
+<meta name="description" content="ZANIME: catálogo com 500 animes. Do Z ao A, todo anime em um só lugar.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Shippori+Mincho:wght@500;700&family=Zen+Maru+Gothic:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=20261112">
+<link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Exo+2:ital,wght@1,500;1,800;1,900&family=Shippori+Mincho:wght@500;700&family=Zen+Maru+Gothic:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css?v=20261116">
 </head>
 <body>
 <div class="wrap">
 <header>
 <div class="rays"></div>
 <div class="topbar"><button class="tb" id="home">← Início</button><nav class="nav" id="nav" aria-label="Navegação"></nav><button class="tb" id="acc" hidden>Entrar</button><label class="tswitch" title="Alternar tema claro e escuro"><input type="checkbox" id="th" aria-label="Alternar entre tema claro e escuro"><span class="tslider"><div class="tstar tstar_1"></div><div class="tstar tstar_2"></div><div class="tstar tstar_3"></div><svg viewBox="0 0 16 16" class="tcloud" aria-hidden="true"><path transform="matrix(.77976 0 0 .78395-299.99-418.63)" fill="#fff" d="m391.84 540.91c-.421-.329-.949-.524-1.523-.524-1.351 0-2.451 1.084-2.485 2.435-1.395.526-2.388 1.88-2.388 3.466 0 1.874 1.385 3.423 3.182 3.667v.034h12.73v-.006c1.775-.104 3.182-1.584 3.182-3.395 0-1.747-1.309-3.186-2.994-3.379.007-.106.011-.214.011-.322 0-2.707-2.271-4.901-5.072-4.901-2.073 0-3.856 1.202-4.643 2.925"></path></svg></span></label></div>
-<h1>ANIHUB</h1>
-<p>Catálogo com 500 animes. Descubra do que cada um trata antes de dar o play.</p>
+<h1 class="zlogo" aria-label="ZANIME"><span class="z">Z</span><span class="a">ANIME</span></h1>
+<p class="slogan">Do <b>Z</b> ao <b>A</b>, todo anime em um só lugar.</p>
 <div class="search">
 <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
 <input id="q" type="search" placeholder="Buscar anime por nome, gênero ou ano" aria-label="Buscar animes">
@@ -30,7 +31,7 @@
 <main class="grid" id="grid"></main>
 </div>
 
-<footer class="wrap foot">Dados e sinopses: MyAnimeList (via dataset do Kaggle). Projeto de fã, sem fins lucrativos.</footer>
+<footer class="wrap foot"><p>Dados e sinopses: MyAnimeList (via dataset do Kaggle).</p><p class="foot-note">PROJETO E USO PESSOAL SEM FINS LUCRATIVOS</p></footer>
 <button class="up" id="up" aria-label="Voltar ao topo">↑</button>
 <div class="overlay" id="ov" role="dialog" aria-modal="true" aria-labelledby="mt">
 <div class="modal" id="modal"></div>
@@ -89,13 +90,16 @@
 <div class="w-big" lang="ja" aria-hidden="true">アニメ</div>
 <div class="w-core">
 <p class="w-hi">Bem-vindo ao</p>
-<div class="w-title">ANIHUB</div>
+<div class="w-title zlogo" aria-label="ZANIME"><span class="z">Z</span><span class="a">ANIME</span></div>
+<p class="w-slogan slogan">Do <b>Z</b> ao <b>A</b>, todo anime em um só lugar.</p>
 <p class="w-sub">Descubra do que cada anime trata antes de assistir. Busque, explore por gênero e salve seus favoritos.</p>
 <div class="w-stats" hidden><span><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M10 9l5 3-5 3z"/></svg><b id="ns"></b> animes</span><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z"/></svg><b>13</b> gêneros</span><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h10a3 3 0 013 3v13H8a3 3 0 01-3-3z"/><path d="M5 17a3 3 0 013-3h10"/></svg><b>12</b> guias completos</span></div>
 <button class="w-btn w-go" id="enter"><span>Entrar no catálogo</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
 </div>
 </div>
-<script src="script.js?v=20261114"></script>
+<script src="dados.js?v=20261118"></script>
+<script src="imagens.js?v=20261118"></script>
+<script src="script.js?v=20261118"></script>
 <script src="genres.js?v=20261104"></script>
 <script src="capas.js?v=20261107"></script>
 <script src="particulas.js?v=20261110"></script>
