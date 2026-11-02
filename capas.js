@@ -4,7 +4,7 @@
 // o MyAnimeList guarda uma versão grande de cada capa: o mesmo endereço com "l" antes do .jpg
 function bigUrl(u){return u?u.replace(/\.jpg(\?.*)?$/i,"l.jpg"):""}
 // mostra a imagem pequena na hora e troca pela grande quando ela terminar de carregar
-function upgrade(el,a){var u=bigUrl(a.img);if(!u||!el)return;
+function upgrade(el,a){if(typeof CAPA!=="undefined"&&CAPA[a.t])return;var u=bigUrl(a.img);if(!u||!el)return;
   var t=new Image();t.referrerPolicy="no-referrer";t.onload=function(){if(el.isConnected)el.src=u};t.src=u}
 // monta o layout em duas colunas: capa inteira à esquerda, informações e ações à direita
 function el(tag,cls,txt){var e=document.createElement(tag);if(cls)e.className=cls;if(txt!=null)e.textContent=txt;return e}

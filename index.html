@@ -7,7 +7,7 @@
 <meta name="description" content="ZANIME: catálogo com 500 animes. Do Z ao A, todo anime em um só lugar.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Exo+2:ital,wght@1,500;1,800;1,900&family=Shippori+Mincho:wght@500;700&family=Zen+Maru+Gothic:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=20261116">
+<link rel="stylesheet" href="style.css?v=20261120">
 </head>
 <body>
 <div class="wrap">
@@ -23,7 +23,7 @@
 <div class="tabs" role="tablist" id="tabs" aria-label="Gêneros"></div>
 </header>
 <section class="panel" aria-label="Filtros e progresso">
-<div class="filters"><label>Ordenar <select id="sort"><option value="">Destaques primeiro</option><option value="az" selected>Nome (A-Z)</option><option value="new">Mais novos</option><option value="old">Mais antigos</option><option value="mal">Nota do MyAnimeList</option><option value="rate">Minha nota</option><option value="unseen">Não assistidos primeiro</option></select></label><label>Formato <select id="fmt"><option value="">Todos</option><option value="TV">Séries</option><option value="Filme">Filmes</option></select></label><label>Ano <select id="yr"><option value="">Todos</option><option value="2020">2020 em diante</option><option value="2010">2010-2019</option><option value="2000">2000-2009</option><option value="1990">1990-1999</option><option value="1980">Até 1989</option></select></label><button class="tb2" id="rnd">Me surpreenda</button></div>
+<div class="filters"><label>Ordenar <select id="sort"><option value="">Destaques primeiro</option><option value="az" selected>Nome (A-Z)</option><option value="new">Mais novos</option><option value="old">Mais antigos</option><option value="mal">Nota do MyAnimeList</option><option value="rate">Minha nota</option><option value="unseen">Não assistidos primeiro</option></select></label><label>Formato <select id="fmt"><option value="">Todos</option><option value="TV">Séries</option><option value="Filme">Filmes</option></select></label><label>Ano <select id="yr"><option value="">Todos</option><option value="2020">2020 em diante</option><option value="2010">2010-2019</option><option value="2000">2000-2009</option><option value="1990">1990-1999</option><option value="1980">Até 1989</option></select></label><label>Nota <select id="minr"><option value="">Qualquer</option><option value="7">7 ou mais</option><option value="7.5">7,5 ou mais</option><option value="8">8 ou mais</option><option value="8.5">8,5 ou mais</option></select></label><label>Situação <select id="stt"><option value="">Todas</option><option value="Em exibição">Em exibição</option><option value="Finalizado">Finalizado</option></select></label><label>Duração <select id="len"><option value="">Qualquer</option><option value="curto">Curtos (até 13 ep.)</option><option value="medio">Médios (14 a 26)</option><option value="longo">Longos (27 ou mais)</option></select></label><button class="tb2 ghost" id="gmulti" type="button">Gêneros<span id="gcount"></span></button><button class="tb2" id="rnd">Me surpreenda</button><button class="tb2 ghost" id="clr" type="button" hidden>Limpar filtros</button></div>
 <div class="prog" hidden><div class="bar"><i id="bar"></i></div><span id="ptxt"></span></div>
 </section>
 <div id="feat"><div class="hero" id="hero"></div><h2 class="sec">Mais bem avaliados <small>entre os animes mais populares</small></h2><div class="row" id="row"></div></div>
@@ -31,7 +31,7 @@
 <main class="grid" id="grid"></main>
 </div>
 
-<footer class="wrap foot"><p>Dados e sinopses: MyAnimeList (via dataset do Kaggle).</p><p class="foot-note">PROJETO E USO PESSOAL SEM FINS LUCRATIVOS</p></footer>
+<footer class="wrap foot"><p>Dados e sinopses: MyAnimeList (via dataset do Kaggle). <a href="#" data-priv>Política de Privacidade</a></p><p class="foot-note">PROJETO E USO PESSOAL SEM FINS LUCRATIVOS</p></footer>
 <button class="up" id="up" aria-label="Voltar ao topo">↑</button>
 <div class="overlay" id="ov" role="dialog" aria-modal="true" aria-labelledby="mt">
 <div class="modal" id="modal"></div>
@@ -97,14 +97,15 @@
 <button class="w-btn w-go" id="enter"><span>Entrar no catálogo</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
 </div>
 </div>
-<script src="dados.js?v=20261118"></script>
+<script src="dados.js?v=20261120"></script>
 <script src="imagens.js?v=20261118"></script>
-<script src="script.js?v=20261118"></script>
-<script src="genres.js?v=20261104"></script>
-<script src="capas.js?v=20261107"></script>
+<script src="script.js?v=20261120"></script>
+<script src="genres.js?v=20261119"></script>
+<script src="capas.js?v=20261120"></script>
 <script src="particulas.js?v=20261110"></script>
+<script src="privacidade.js?v=20261120"></script>
 <script src="config.js?v=20261029"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.js" integrity="sha384-BWcjm9OdFth9TbhCxZPdm+gAOUMAzQy9nmTs12ioXdCcbVnJaPMn+fMUoQCLt60R" crossorigin="anonymous"></script>
-<script src="auth.js?v=20261104"></script>
+<script src="auth.js?v=20261120"></script>
 </body>
 </html>

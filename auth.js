@@ -24,7 +24,7 @@ function viewForm(mode){
   $("at").textContent=up?"Criar conta":rec?"Recuperar senha":"Entrar";
   $("ab").innerHTML='<form id="af" novalidate>'+field("ae","E-mail","email","email")+
     (rec?"":field("ap","Senha"+(up?" (mín. 8, com letras e números)":""),"password",up?"new-password":"current-password"))+
-    '<button class="abtn" type="submit">'+(up?"Criar conta":rec?"Enviar link":"Entrar")+'</button></form><p class="alinks">'+
+    (up?'<label class="ack"><input id="ac" type="checkbox"> Li e concordo com a <a href="#" data-priv>Política de Privacidade</a>.</label>':'')+'<button class="abtn" type="submit">'+(up?"Criar conta":rec?"Enviar link":"Entrar")+'</button></form><p class="alinks">'+
     (mode==="in"?'<a href="#" data-m="up">Criar conta</a> · <a href="#" data-m="rec">Esqueci a senha</a>':'<a href="#" data-m="in">Já tenho conta</a>')+'</p>';
   msg("");
   $("af").onsubmit=function(e){e.preventDefault();submit(mode)};
@@ -43,7 +43,7 @@ function nm(){return md().display_name||user.email.split("@")[0]}
 function avUrl(){var u=md().avatar_url||"";return u.indexOf(C.url+"/storage/v1/object/public/avatars/")===0?u:""}
 function presetOf(m){var n=m.avatar_preset;return Number.isInteger(n)&&PRE[n]?PRE[n]:null}
 function paint(el,p){el.textContent=p[0];el.style.background="linear-gradient(135deg,"+p[1]+","+p[2]+")"}
-function animeImg(){var t=md().avatar_anime;return t&&TOP.indexOf(t)>-1&&typeof IMG!=="undefined"&&IMG[t]?IMG[t]:""}
+function animeImg(){var t=md().avatar_anime;return t&&TOP.indexOf(t)>-1?capaSrc(t):""}
 function ncol(){var n=md().name_color;return Number.isInteger(n)&&n>0&&NC[n]?NC[n]:""}
 function avEl(big){var u=avUrl(),ai=animeImg(),p=presetOf(md()),el;
   if(!u&&ai){el=document.createElement("img");el.src=ai;el.alt=""}
@@ -82,13 +82,13 @@ function viewAccount(tab){
     '<label class="af">Sobre você<textarea id="abio" maxlength="140" rows="2"></textarea></label>'+
     '<label class="af">Anime favorito<input id="afa" list="adl" maxlength="80" placeholder="Digite para buscar" autocomplete="off"></label><datalist id="adl"></datalist>'+
     '<button class="abtn" id="asave" type="button">Salvar perfil</button>'+
-    '<div class="afoot"><span>Conectado como <b id="aem"></b></span><button class="lnk" id="aout" type="button">Sair</button><button class="lnk danger" id="adel" type="button">Apagar conta</button></div>';
+    '<div class="afoot"><span>Conectado como <b id="aem"></b></span><button class="lnk" id="aout" type="button">Sair</button><button class="lnk" id="adata" type="button">Baixar meus dados</button><a class="lnk" href="#" data-priv>Privacidade</a><button class="lnk danger" id="adel" type="button">Apagar conta</button></div>';
     $("avh").appendChild(avEl(1));$("adn").value=d.n;$("abio").value=d.b;$("afa").value=d.f;$("aem").textContent=user.email;badge(d.f,$("fb"));
     $("wn").textContent=d.n||nm();$("wb").textContent=d.b;
     $("adn").oninput=function(){$("wn").textContent=this.value.trim()||nm()};$("abio").oninput=function(){$("wb").textContent=this.value};
     A.forEach(function(x){var o=document.createElement("option");o.value=x.t;$("adl").appendChild(o)});
     TOP.forEach(function(t){var b=document.createElement("button");b.type="button";b.className="pre1"+(m.avatar_anime===t&&!avUrl()?" on":"");b.title=t;b.setAttribute("aria-label",t);
-      if(typeof IMG!=="undefined"&&IMG[t]){var im=document.createElement("img");im.src=IMG[t];im.alt="";b.appendChild(im)}else b.textContent=t.charAt(0);
+      var cs=capaSrc(t);if(cs){var im=document.createElement("img");im.src=cs;im.alt="";b.appendChild(im)}else b.textContent=t.charAt(0);
       b.onclick=function(){keep();sb.storage.from("avatars").remove([user.id+"/avatar.jpg"]).then(function(){upd({avatar_anime:t,avatar_url:null,avatar_preset:null},"Avatar atualizado!")})};$("pre").appendChild(b)});
     NC.forEach(function(c,i){var b=document.createElement("button");b.type="button";b.className="nc"+(i===csel?" on":"");b.setAttribute("aria-label",i?"Cor "+i:"Cor padrão");if(c)b.style.background=c;else b.textContent="A";
       b.onclick=function(){csel=i;$("wn").style.color=c;document.querySelectorAll(".nc").forEach(function(x,j){x.classList.toggle("on",j===i)})};$("ncs").appendChild(b)});
@@ -109,6 +109,10 @@ function viewAccount(tab){
       if(f&&!A.some(function(x){return x.t===f}))return msg("Escolha um anime da lista de sugestões.");
       sb.auth.updateUser({data:{display_name:n||null,bio:b||null,fav_anime:f||null,name_color:csel||null}}).then(function(x){if(x.error)return msg("Não foi possível salvar.");user=x.data.user;paintBtn();msg("Perfil salvo!",1)})};
     $("aout").onclick=function(){sb.auth.signOut()};
+    $("adata").onclick=function(){var t=function(a){return a.map(function(i){return A[i]&&A[i].t}).filter(Boolean)},
+      d={email:user.email,perfil:md(),favoritos:t([...favs]),assistidos:t([...seen]),assistindo:t([...watching]),notas:Object.keys(rate).map(function(k){return{anime:A[k]&&A[k].t,nota:rate[k]}})},
+      b=new Blob([JSON.stringify(d,null,2)],{type:"application/json"}),u=URL.createObjectURL(b),l=document.createElement("a");
+      l.href=u;l.download="meus-dados-zanime.json";document.body.appendChild(l);l.click();l.remove();setTimeout(function(){URL.revokeObjectURL(u)},1000)};
     $("adel").onclick=function(){
       if(!confirm("Apagar a conta e todos os dados salvos nela, inclusive a foto? Isso não pode ser desfeito."))return;
       sb.storage.from("avatars").remove([user.id+"/avatar.jpg"]).then(function(){
@@ -124,6 +128,7 @@ function submit(mode){
   if(mode==="rec")return sb.auth.resetPasswordForEmail(em,{redirectTo:back}).then(function(){msg("Se o e-mail existir, enviamos um link para criar nova senha.",1)});
   if(mode==="up"){
     if(!okPass(pw))return msg("A senha precisa ter 8 ou mais caracteres, com letras e números.");
+    if(!$("ac").checked)return msg("Para criar a conta, marque que você leu a Política de Privacidade.");
     return sb.auth.signUp({email:em,password:pw,options:{emailRedirectTo:back}}).then(function(r){
       if(r.error)return msg("Não foi possível criar a conta: "+r.error.message);
       msg("Quase lá! Enviamos um e-mail de confirmação. Abra o link e depois entre.",1)});

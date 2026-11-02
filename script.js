@@ -1,6 +1,6 @@
 /* ZANIME: código do site. Os dados ficam em dados.js e as imagens em imagens.js (carregados antes deste arquivo). */
 const tabs=["Todos","Favoritos","Assistidos","Assistindo","Ação","Aventura","Comédia","Drama","Fantasia","Romance","Sci-Fi","Suspense","Terror","Esporte","Slice of Life","Mecha","Sobrenatural"];
-let tab="Todos",query="",favs=new Set(),sortBy="az",fmt="",yr="",lim=60;
+let tab="Todos",query="",favs=new Set(),sortBy="az",fmt="",yr="",lim=60,minr=0,stt="",len="",gsel=[];
 try{favs=new Set(JSON.parse(localStorage.getItem("favs")||"[]"))}catch(e){}
 let seen=new Set();
 try{seen=new Set(JSON.parse(localStorage.getItem("seen")||"[]"))}catch(e){}
@@ -14,6 +14,22 @@ const saveFavs=()=>{try{localStorage.setItem("favs",JSON.stringify([...favs]))}c
 const norm=s=>s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
 const $=id=>document.getElementById(id);
 
+const extraOn=()=>!!(minr||stt||len||gsel.length);
+function lenOk(a){const n=a.ep;if(a.f==="Filme"||typeof n!=="number"||n<1)return false;return len==="curto"?n<=13:len==="medio"?n>=14&&n<=26:n>=27}
+function syncFilters(){const on=!!(extraOn()||fmt||yr);$("clr").hidden=!on;$("gcount").textContent=gsel.length?" ("+gsel.length+")":""}
+// "Parecidos": pontua gêneros em comum (os mais raros valem mais), mesmo estúdio, mesmo formato, ano e nota próximos
+const GN={};A.forEach(a=>a.g.forEach(g=>{GN[g]=(GN[g]||0)+1}));
+function similares(i,n){const a=A[i];
+return A.map((b,j)=>{if(j===i)return null;let s=0;
+for(const g of a.g)if(b.g.includes(g))s+=Math.log(A.length/GN[g]);
+if(!s)return null;
+s/=Math.sqrt(a.g.length*b.g.length);
+if(a.s&&b.s===a.s)s+=.8;if(a.f===b.f)s+=.5;
+if(a.y&&b.y)s+=Math.max(0,1-Math.abs(a.y-b.y)/20)*.6;
+if(a.mr&&b.mr)s+=Math.max(0,1-Math.abs(a.mr-b.mr)/2)*.4+(b.mr-7)*.08;
+return{j,s}}).filter(Boolean).sort((x,y)=>y.s-x.s).slice(0,n)}
+function similarHtml(i){const r=similares(i,8);
+return r.length?`<div class="simgrid">${r.map(({j})=>{const b=A[j];return `<button class="sim" data-open="${j}"><div class="simc">${art(b)}</div><span class="simt">${b.t}</span><span class="sims">${b.y}${b.mr?" · ★ "+b.mr:""}</span></button>`}).join("")}</div>`:`<p class="note">Ainda não encontrei títulos parecidos.</p>`}
 function list(){
 const q=norm(query.trim());
 return A.map((a,i)=>({a,i})).filter(({a,i})=>{
@@ -22,6 +38,10 @@ if(tab==="Assistidos"&&!seen.has(i))return false;
 if(fmt&&a.f!==fmt)return false;
 if(tab==="Assistindo"&&!watching.has(i))return false;
 if(yr&&dec(a.y)!==yr)return false;
+if(minr&&!(a.mr>=minr))return false;
+if(stt&&a.stt!==stt)return false;
+if(len&&!lenOk(a))return false;
+if(gsel.length&&!gsel.every(g=>a.g.includes(g)))return false;
 if(!["Todos","Favoritos","Assistidos","Assistindo"].includes(tab)&&!a.g.includes(tab))return false;
 return !q||norm([a.t,a.s,a.sin,...a.g].join(" ")).includes(q);
 });
@@ -30,7 +50,7 @@ const PAL={"Ação":["#FF5A36","#7A0E2E","#FFD23F"],"Aventura":["#14B8A6","#134E
 function hsh(s){let n=2166136261;for(const c of s){n^=c.charCodeAt(0);n=Math.imul(n,16777619)}return n>>>0}
 function rng(a){return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
 function artSvg(a){
-if(IMG[a.t])return `<img src="${IMG[a.t]}" alt="">`;
+if(typeof IMG!=="undefined"&&IMG[a.t])return `<img src="${IMG[a.t]}" alt="">`;
 const r=rng(hsh(a.t)),g=a.g[0],p=PAL[g]||PAL["Aventura"],ac=a.g[1]&&PAL[a.g[1]]?PAL[a.g[1]][2]:p[2];
 const R=(x,y)=>+(x+r()*(y-x)).toFixed(1),id="g"+hsh(a.t);
 const sx=R(80,220),sy=R(80,170),sr=R(34,64);
@@ -55,18 +75,20 @@ default:s+=sun+stars(14);for(let i=0;i<6;i++)s+=`<path d="M${R(0,300)} 400C${R(0
 return s+`<text x="150" y="300" text-anchor="middle" font-family="Dela Gothic One,Zen Maru Gothic,sans-serif" font-size="140" fill="#fff" opacity=".93" stroke="rgba(0,0,0,.25)" stroke-width="6" style="paint-order:stroke">${a.k}</text></svg>`}
 const EYE=`<svg class="e-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg><svg class="e-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.9 17.9A10.9 10.9 0 0112 19C5 19 1 12 1 12a18.5 18.5 0 015.1-5.9M9.9 5.1A10.9 10.9 0 0112 5c7 0 11 7 11 7a18.5 18.5 0 01-2.2 3.2M1 1l22 22"/></svg>`;
 function epTxt(a){if(a.f==="Filme")return"1 filme";const n=a.ep;return !n?"":typeof n==="number"?`${n} ${n===1?"episódio":"episódios"}`:n}
-function art(a){return !IMG[a.t]&&a.img?`<img src="${a.img}" alt="" loading="lazy" referrerpolicy="no-referrer" data-k="${a.id}">`:artSvg(a)}
+// capa: 1) arquivo da pasta capas/  2) imagem embutida (imagens.js)  3) imagem do MyAnimeList  4) desenho gerado por código
+function capaSrc(t){const f=typeof CAPA!=="undefined"&&CAPA[t];return f?"capas/"+f:(typeof IMG!=="undefined"&&IMG[t])||""}
+function art(a){const s=capaSrc(a.t);if(s)return `<img src="${s}" alt="" loading="lazy" decoding="async" data-k="${a.id}">`;return a.img?`<img src="${a.img}" alt="" loading="lazy" referrerpolicy="no-referrer" data-k="${a.id}">`:artSvg(a)}
 document.addEventListener("error",e=>{const t=e.target;if(t&&t.tagName==="IMG"&&t.dataset&&t.dataset.k!==undefined)t.outerHTML=artSvg(A[+t.dataset.k])},true);
 const cardH=({a,i})=>`<div class="cardw${seen.has(i)?" seen":""}${watching.has(i)?" watching":""}" data-w="${i}"><button class="card" data-i="${i}"><div class="cover">${art(a)}<small>${a.f}</small>${a.mr?`<em class="mal">★ ${a.mr}</em>`:""}</div><div class="info"><h3>${a.t}</h3><p>${a.g.join(", ")} · ${a.y}${rate[i]?" · ★ "+rate[i]:""}</p></div></button><span class="badge">Assistido</span><span class="wbadge">Assistindo</span><button class="eye" data-seen="${i}" aria-pressed="${seen.has(i)}" aria-label="Marcar ${a.t} como assistido" title="Marcar como assistido">${EYE}</button></div>`;
 function renderTabs(){
 $("tabs").innerHTML=tabs.map(n=>`<button class="tab" role="tab" aria-selected="${n===tab}" data-t="${n}" style="--c:${n==="Todos"?"#FFD23F":n==="Favoritos"?"#FF8FB1":n==="Assistidos"?"#34D399":n==="Assistindo"?"#FBBF24":PAL[n][0]}"><i></i>${n}${n==="Favoritos"?" ("+favs.size+")":n==="Assistidos"?" ("+seen.size+")":n==="Assistindo"?" ("+watching.size+")":""}</button>`).join("");
 }
-function renderGrid(anim){const showF=tab==="Todos"&&!query.trim()&&!fmt&&!yr;$("feat").hidden=!showF;if(showF)renderRow();$("grid").classList.toggle("anim",!!anim);
+function renderGrid(anim){syncFilters();const showF=tab==="Todos"&&!query.trim()&&!fmt&&!yr&&!extraOn();$("feat").hidden=!showF;if(showF)renderRow();$("grid").classList.toggle("anim",!!anim);
 const r=list();
 $("count").textContent=r.length+(r.length===1?" anime encontrado":" animes encontrados");
-if(!r.length){$("grid").innerHTML=`<div class="empty">${tab==="Assistindo"&&!query?"Nenhum anime marcado como assistindo. Abra um anime e toque em Estou assistindo.":tab==="Assistidos"&&!query?"Nenhum anime marcado como assistido. Toque no olhinho de uma capa para marcar.":tab==="Favoritos"&&!query?"Você ainda não favoritou nada. Abra um anime e toque em Favoritar.":"Nada encontrado. Tente outro nome ou gênero."}</div>`;return}
+if(!r.length){$("grid").innerHTML=`<div class="empty">${tab==="Assistindo"&&!query?"Nenhum anime marcado como assistindo. Abra um anime e toque em Estou assistindo.":tab==="Assistidos"&&!query?"Nenhum anime marcado como assistido. Toque no olhinho de uma capa para marcar.":tab==="Favoritos"&&!query?"Você ainda não favoritou nada. Abra um anime e toque em Favoritar.":"Nada encontrado. Tente outro nome ou afrouxe os filtros."}</div>`;return}
 const more=n=>n>lim?`<button class="more" data-more>Carregar mais (${n-lim} restantes)</button>`:"";
-if(tab==="Todos"&&!query.trim()&&!sortBy&&!fmt&&!yr){
+if(tab==="Todos"&&!query.trim()&&!sortBy&&!fmt&&!yr&&!extraOn()){
 const f=r.filter(x=>x.a.sin),o=r.filter(x=>!x.a.sin);
 $("grid").innerHTML=`<h2 class="sec">Destaques <small>com sinopse e guia completo</small></h2>`+f.map(cardH).join("")+`<h2 class="sec">Catálogo completo <small>${o.length} animes</small></h2>`+o.slice(0,lim).map(cardH).join("")+more(o.length);
 }else{const s=srt(r);$("grid").innerHTML=s.slice(0,lim).map(cardH).join("")+more(s.length)}
@@ -91,10 +113,11 @@ const rows=[["Ano",a.y],["Estúdio",a.s],["Episódios",epTxt(a)],["Temporadas",a
 const body={
 sinopse:a.sin?`${tags}<p>${a.sin}</p><p><b>Clima:</b> ${a.vibe}</p>`:a.syn?`${tags}<p>${a.syn}</p>${a.tr?"":`<p class="note">Sinopse original em inglês, do MyAnimeList.</p><a class="btnlink" href="https://translate.google.com/?sl=en&tl=pt&op=translate&text=${encodeURIComponent(a.syn.replace(/&amp;/g,"&").replace(/&lt;/g,"<").replace(/&gt;/g,">"))}" target="_blank" rel="noopener">Traduzir para português</a>`}`:`${tags}<p>Este título ainda não tem sinopse escrita aqui. <a href="${mal}" target="_blank" rel="noopener" style="color:var(--accent)">Ver sinopse no MyAnimeList</a></p>`,
 pra:a.pra?`<p><b>Pra quem é:</b> ${a.pra}</p><p><b>Por onde começar:</b> ${a.ini}</p>`:"",
+similar:mtab==="similar"?similarHtml(cur):"",
 onde:`<a class="btnlink" href="https://www.justwatch.com/br/busca?q=${encodeURIComponent(a.t)}" target="_blank" rel="noopener">Ver onde assistir ↗</a>`,
 ficha:`<dl>${rows.map(r=>`<dt>${r[0]}</dt><dd>${r[1]}</dd>`).join("")}</dl>${CUR[a.t]||a.f==="Filme"?"":`<p class="note" style="margin-top:12px">Os números do MyAnimeList valem para a obra listada. Séries com várias temporadas podem ter mais episódios no total.</p>`}`
 }[mtab];
-const mt=[["sinopse","Sinopse"],...(a.pra?[["pra","Vale a pena?"]]:[]),["onde","Onde assistir"],["ficha","Ficha"]];
+const mt=[["sinopse","Sinopse"],...(a.pra?[["pra","Vale a pena?"]]:[]),["similar","Parecidos"],["onde","Onde assistir"],["ficha","Ficha"]];
 $("modal").innerHTML=`<div class="mhead">${art(a)}<button class="close" aria-label="Fechar">×</button><h2 id="mt">${a.t}</h2></div><div class="mbody"><div class="mtabs" role="tablist">${mt.map(([k,n])=>`<button class="mtab" role="tab" aria-selected="${k===mtab}" data-m="${k}">${n}</button>`).join("")}</div>${body}${[1,2,3,4,5].length?`<div class="stars" role="group" aria-label="Sua nota">${[1,2,3,4,5].map(n=>`<button class="star${(rate[cur]||0)>=n?" on":""}" data-star="${n}" aria-label="${n} estrelas">★</button>`).join("")}</div>`:""}<button class="fav ${watching.has(cur)?"on":""}" data-watching>${watching.has(cur)?"Assistindo agora":"Estou assistindo"}</button> <button class="fav seenb ${seen.has(cur)?"on":""}" data-seenm aria-pressed="${seen.has(cur)}">${seen.has(cur)?"Assistido":"Marcar como assistido"}</button> <button class="fav ${on?"on":""}" data-fav aria-pressed="${on}">${on?"Favoritado":"Favoritar"}</button></div>`;
 }
 function closeModal(){$("ov").classList.remove("open")}
@@ -104,6 +127,7 @@ $("tabs").addEventListener("click",e=>{const b=e.target.closest("[data-t]");if(!
 $("grid").addEventListener("click",e=>{if(e.target.closest("[data-more]")){lim+=60;renderGrid(1);return}const s=e.target.closest("[data-seen]");if(s)return toggleSeen(+s.dataset.seen);const c=e.target.closest("[data-i]");if(c)openModal(+c.dataset.i)});
 $("ov").addEventListener("click",e=>{
 if(e.target===$("ov")||e.target.closest(".close"))return closeModal();
+const so=e.target.closest("[data-open]");if(so){cur=+so.dataset.open;mtab="similar";drawModal();$("ov").scrollTop=0;$("modal").scrollTop=0;return}
 const m=e.target.closest("[data-m]");if(m){mtab=m.dataset.m;drawModal();return}
 const st=e.target.closest("[data-star]");if(st){const n=+st.dataset.star;rate[cur]===n?delete rate[cur]:rate[cur]=n;saveRate();drawModal();renderGrid();return}
 if(e.target.closest("[data-watching]")){watching.has(cur)?watching.delete(cur):watching.add(cur);saveWatch();drawModal();renderTabs();renderGrid();return}
@@ -116,6 +140,10 @@ $("enter").onclick=()=>{document.documentElement.classList.remove("intro");$("we
 $("sort").onchange=e=>{sortBy=e.target.value;lim=60;renderGrid(1)};
 $("fmt").onchange=e=>{fmt=e.target.value;lim=60;renderGrid(1);drawNav()};
 $("yr").onchange=e=>{yr=e.target.value;lim=60;renderGrid(1)};
+$("minr").onchange=e=>{minr=+e.target.value||0;lim=60;renderGrid(1)};
+$("stt").onchange=e=>{stt=e.target.value;lim=60;renderGrid(1)};
+$("len").onchange=e=>{len=e.target.value;lim=60;renderGrid(1)};
+$("clr").onclick=()=>{minr=0;stt="";len="";gsel=[];fmt="";yr="";["minr","stt","len","fmt","yr"].forEach(k=>{$(k).value=""});lim=60;renderGrid(1);drawNav()};
 const setTheme=t=>{document.documentElement.dataset.theme=t;$("th").checked=t==="light";try{localStorage.setItem("theme",t)}catch(e){}};
 $("th").onchange=()=>setTheme($("th").checked?"light":"dark");
 let th0="dark";try{th0=localStorage.getItem("theme")||"dark"}catch(e){}setTheme(th0);
