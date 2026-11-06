@@ -20,7 +20,7 @@ const $=id=>document.getElementById(id);
 
 const extraOn=()=>!!(minr||stt||len||gsel.length);
 function lenOk(a){const n=a.ep;if(a.f==="Filme"||typeof n!=="number"||n<1)return false;return len==="curto"?n<=13:len==="medio"?n>=14&&n<=26:n>=27}
-function syncFilters(){const on=!!(extraOn()||fmt||yr);$("clr").hidden=!on;$("gcount").textContent=gsel.length?" ("+gsel.length+")":""}
+function syncFilters(){const on=!!(extraOn()||fmt||yr);$("clr").hidden=!on;$("gcount").textContent=gsel.length?" ("+gsel.length+")":"";const nf=[minr,stt,len,yr,fmt].filter(Boolean).length+(gsel.length?1:0);$("fcount").textContent=nf?nf:"";$("ftog").classList.toggle("on",nf>0)}
 // "Parecidos": pontua gêneros em comum (os mais raros valem mais), mesmo estúdio, mesmo formato, ano e nota próximos
 const GN={};A.forEach(a=>a.g.forEach(g=>{GN[g]=(GN[g]||0)+1}));
 function similares(i,n){const a=A[i];
@@ -107,7 +107,18 @@ function toggleLater(i){later.has(i)?later.delete(i):later.add(i);saveLater();sy
 // quem já foi assistido ou está sendo assistido sai da lista de "mais tarde"
 function dropLater(i){if(later.delete(i)){saveLater();syncLater(i)}}
 function toggleSeen(i){seen.has(i)?seen.delete(i):seen.add(i);if(seen.has(i))dropLater(i);saveSeen();document.querySelectorAll(`[data-w="${i}"]`).forEach(w=>{w.classList.toggle("seen",seen.has(i));const ey=w.querySelector(".eye");ey.setAttribute("aria-pressed",seen.has(i));ey.classList.remove("pop");void ey.offsetWidth;ey.classList.add("pop")});renderTabs();updateProg();if(tab==="Assistidos"||tab===LT)renderGrid()}
-function renderRow(){const t=A.map((a,i)=>({a,i})).filter(x=>x.a.mr&&x.a.mp&&x.a.mp<4000).sort((x,y)=>y.a.mr-x.a.mr).slice(0,14);$("row").innerHTML=t.map(cardH).join("")}
+const ROWS=[
+["Mais bem avaliados","entre os mais populares",x=>x.a.mr&&x.a.mp&&x.a.mp<4000],
+["Para maratonar rápido","séries com até 13 episódios",x=>x.a.f!=="Filme"&&x.a.ep>=1&&x.a.ep<=13&&x.a.mr>=7.7],
+["Filmes para uma noite","",x=>x.a.f==="Filme"&&x.a.mr>=7.5],
+["Ação e aventura","",x=>x.a.mr>=7.6&&(x.a.g.includes("Ação")||x.a.g.includes("Aventura"))],
+["Romance e dia a dia","",x=>x.a.mr>=7.4&&(x.a.g.includes("Romance")||x.a.g.includes("Slice of Life"))],
+["Mistério e terror","",x=>x.a.mr>=7.4&&(x.a.g.includes("Suspense")||x.a.g.includes("Terror"))]];
+// fileiras horizontais (cada anime aparece em uma só); guarda a posição da rolagem ao redesenhar
+function renderRow(){const box=$("rows"),old=[...box.querySelectorAll(".row")].map(r=>r.scrollLeft),all=A.map((a,i)=>({a,i})),used=new Set();
+box.innerHTML=ROWS.map(([t,sub,f])=>{const r=all.filter(x=>f(x)&&!used.has(x.i)).sort((x,y)=>y.a.mr-x.a.mr).slice(0,18);r.forEach(x=>used.add(x.i));
+return r.length?`<section class="rowsec"><div class="rowhead"><h2 class="sec">${t}${sub?` <small>${sub}</small>`:""}</h2><div class="rowarr"><button data-rowprev aria-label="Voltar em ${t}">‹</button><button data-rownext aria-label="Avançar em ${t}">›</button></div></div><div class="row">${r.map(cardH).join("")}</div></section>`:""}).join("");
+box.querySelectorAll(".row").forEach((r,n)=>{r.scrollLeft=old[n]||0})}
 let FEAT=[],hi=0;
 function drawNav(){$("nav").innerHTML=[["home","Home"],["TV","Séries"],["Filme","Filmes"],["gen","Gêneros"]].map(([k,n])=>`<button data-nav="${k}" class="${(k==="home"&&!fmt)||k===fmt?"on":""}">${n}</button>`).join("")}
 function drawHero(){const a=A[FEAT[hi]];if(!a)return;const tx=a.sin||a.syn||"";
@@ -168,7 +179,7 @@ FEAT=A.filter(a=>a.sin).map(a=>a.id);hi=Math.floor(Math.random()*FEAT.length);dr
 if(typeof matchMedia!=="function"||!matchMedia("(prefers-reduced-motion:reduce)").matches)setInterval(()=>{if(!document.hidden&&!$("hero").matches(":hover")){hi=(hi+1)%FEAT.length;drawHero()}},8000);
 $("hero").addEventListener("click",e=>{const g=e.target.closest("[data-hero]");if(g)return openModal(+g.dataset.hero);const w=e.target.closest("[data-herow]");if(w){const i=+w.dataset.herow;watching.has(i)?watching.delete(i):watching.add(i);if(watching.has(i))dropLater(i);saveWatch();drawHero();renderTabs();renderGrid();return}const t=e.target.closest("[data-hi]");if(t){hi=+t.dataset.hi;drawHero();return}if(e.target.closest("[data-heronext]")){hi=(hi+1)%FEAT.length;drawHero()}else if(e.target.closest("[data-heroprev]")){hi=(hi-1+FEAT.length)%FEAT.length;drawHero()}});
 $("nav").addEventListener("click",e=>{const b=e.target.closest("[data-nav]");if(!b)return;const v=b.dataset.nav;if(v==="gen"){if($("tabs").scrollIntoView)$("tabs").scrollIntoView({behavior:"smooth",block:"center"});return}if(v==="home"){query="";$("q").value="";minr=0;stt="";len="";gsel=[];yr="";sortBy="az";["minr","stt","len","yr"].forEach(k=>{$(k).value=""});$("sort").value="az"}fmt=v==="home"?"":v;$("fmt").value=fmt;tab="Todos";lim=60;renderTabs();renderGrid(1);drawNav()});
-$("row").addEventListener("click",e=>{const s=e.target.closest("[data-seen]");if(s)return toggleSeen(+s.dataset.seen);const lb=e.target.closest("[data-later]");if(lb)return toggleLater(+lb.dataset.later);const c=e.target.closest("[data-i]");if(c)openModal(+c.dataset.i)});
+$("rows").addEventListener("click",e=>{const ar=e.target.closest("[data-rowprev],[data-rownext]");if(ar){const r=ar.closest(".rowsec").querySelector(".row");r.scrollBy({left:(ar.hasAttribute("data-rownext")?1:-1)*r.clientWidth*.85,behavior:"smooth"});return}const s=e.target.closest("[data-seen]");if(s)return toggleSeen(+s.dataset.seen);const lb=e.target.closest("[data-later]");if(lb)return toggleLater(+lb.dataset.later);const c=e.target.closest("[data-i]");if(c)openModal(+c.dataset.i)});
 $("home").onclick=()=>{document.documentElement.classList.add("intro");const w=$("welcome");w.classList.add("out");w.style.display="grid";void w.offsetWidth;w.classList.remove("out");$("enter").focus();if(typeof scrollTo==="function")scrollTo(0,0)};
 (function(){const R=rng(11),pal=["#17204f","#1c2a66","#22307a","#2a2f5e","#3a2f5e","#7a3b5e","#2d6a8f","#b88a3d","#1a3a5c"];let b="";
 [[118,222,310],[118,342,310],[118,462,310],[1236,190,260],[1236,300,260]].forEach(([x0,y,w])=>{let x=x0;while(x<x0+w-14){const bw=8+R()*9,bh=34+R()*46;b+=`<rect x="${x.toFixed(1)}" y="${(y-bh).toFixed(1)}" width="${bw.toFixed(1)}" height="${bh.toFixed(1)}" fill="${pal[Math.floor(R()*pal.length)]}"/>`;x+=bw+1.5}});
@@ -177,3 +188,6 @@ let d="";for(let i=0;i<26;i++)d+=`<circle class="dust" cx="${(R()*1600).toFixed(
 if(document.querySelectorAll)document.querySelectorAll(".w-go").forEach(b=>b.onclick=$("enter").onclick);
 if(typeof window!=="undefined"&&!(typeof matchMedia==="function"&&matchMedia("(prefers-reduced-motion:reduce)").matches))$("welcome").addEventListener("pointermove",e=>{$("scene").style.transform=`scale(1.06) translate(${(e.clientX/innerWidth-.5)*-16}px,${(e.clientY/innerHeight-.5)*-9}px)`});
 renderTabs();renderGrid();updateProg();$("enter").focus();
+
+// botão "Filtros": abre e fecha o painel de filtros
+$("ftog").addEventListener("click",()=>{const p=$("fpanel"),c=p.classList.toggle("closed");$("ftog").setAttribute("aria-expanded",String(!c))});

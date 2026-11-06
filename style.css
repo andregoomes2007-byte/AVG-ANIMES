@@ -455,3 +455,77 @@ h1.zlogo{font-size:clamp(44px,8.5vw,92px);margin:0 0 4px}
 .lbtn:hover{transform:scale(1.08)}
 .lbtn.on{background:#3B82F6;border-color:#fff}
 .lbtn:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+
+/* ===== visual novo, etapa 1: barra de vidro no topo, cabeçalho sem caixa, filtros recolhidos ===== */
+.topdock{position:sticky;top:0;z-index:40;background:color-mix(in srgb,var(--bg) 58%,transparent);-webkit-backdrop-filter:blur(18px) saturate(1.5);backdrop-filter:blur(18px) saturate(1.5);border-bottom:1px solid color-mix(in srgb,var(--line) 75%,transparent)}
+.topdock .topbar{max-width:1180px;margin:0 auto;padding:10px 18px;flex-wrap:nowrap}
+.topdock .tb{color:var(--ink);border:1px solid var(--line);background:color-mix(in srgb,var(--surface) 55%,transparent)}
+.topdock .nav{justify-content:center;flex-wrap:nowrap}
+.topdock .nav button{color:var(--muted)}
+.topdock .nav button:hover{color:var(--ink)}
+.topdock .nav button.on{color:var(--ink);background:color-mix(in srgb,var(--accent) 24%,transparent)}
+header{margin:0;padding:54px 0 10px;border:0;border-radius:0;background:none;box-shadow:none;overflow:visible;text-align:center}
+header h1{margin-inline:auto}
+header .slogan{margin-inline:auto;max-width:none}
+header::before{content:"";position:absolute;left:50%;top:-80px;width:min(1100px,100vw);height:420px;transform:translateX(-50%);pointer-events:none;background:radial-gradient(closest-side,color-mix(in srgb,var(--p2) 38%,transparent),transparent)}
+header>.rays{left:50%;right:auto;width:100vw;transform:translateX(-50%);-webkit-mask-image:linear-gradient(#000 35%,transparent);mask-image:linear-gradient(#000 35%,transparent)}
+.searchrow{display:flex;gap:10px;align-items:center;max-width:860px;margin:26px auto 16px}
+.searchrow .search{flex:1;margin:0}
+.searchrow .search input{height:54px;padding-block:0;border:1px solid var(--line);background:color-mix(in srgb,var(--surface) 78%,transparent);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);box-shadow:0 10px 30px rgba(0,0,0,.25)}
+.searchrow .search input:focus{border-color:var(--accent);box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 25%,transparent),0 10px 30px rgba(0,0,0,.25)}
+.sbtn{flex:none;height:54px;display:inline-flex;align-items:center;gap:8px;padding:0 20px;border-radius:999px;border:1px solid var(--line);background:color-mix(in srgb,var(--surface) 78%,transparent);color:var(--ink);font:inherit;font-weight:700;cursor:pointer;transition:transform .15s,background .2s,border-color .2s}
+.sbtn svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
+.sbtn:hover{border-color:var(--accent)}
+.sbtn:active{transform:scale(.96)}
+.sbtn:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+.sbtn.hot{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.sbtn.on,.sbtn[aria-expanded="true"]{border-color:var(--accent)}
+.sbtn b{min-width:20px;height:20px;padding:0 6px;border-radius:999px;background:var(--accent);color:var(--accent-ink);font-size:12px;line-height:20px;text-align:center}
+.sbtn b:empty{display:none}
+.panel{animation:painel .25s ease-out}
+.panel.closed{display:none}
+@keyframes painel{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.panel{animation:none}}
+@media (max-width:700px){.searchrow{flex-wrap:wrap}.searchrow .search{flex:1 1 100%}.sbtn{flex:1;justify-content:center}.topdock .nav{overflow-x:auto;scrollbar-width:none}.topdock .topbar{gap:6px;padding:8px 12px}}
+.searchrow .search svg{z-index:1;pointer-events:none}
+/* tema claro: sem a caixa azul, texto escuro sobre fundo claro */
+:root[data-theme="light"] .tab{background:color-mix(in srgb,var(--accent) 9%,transparent);color:var(--ink);border-color:transparent}
+:root[data-theme="light"] .tab[aria-selected="true"]{background:var(--accent);color:#fff}
+:root[data-theme="light"] .slogan{color:var(--muted)}
+:root[data-theme="light"] .slogan b{text-shadow:none;color:var(--accent)}
+:root[data-theme="light"] header .zlogo .a{background:linear-gradient(180deg,#1B3A8A 10%,#0B1B4D 100%);-webkit-background-clip:text;background-clip:text;filter:none}
+:root[data-theme="light"] header .zlogo .z{filter:drop-shadow(0 4px 14px rgba(27,79,224,.35))}
+:root[data-theme="light"] header>.rays{display:none}
+:root[data-theme="light"] .searchrow .search input,:root[data-theme="light"] .sbtn{box-shadow:0 8px 24px rgba(27,79,224,.12)}
+@media (max-width:700px){.topdock .topbar{flex-wrap:wrap;row-gap:4px}.topdock .nav{order:3;flex:1 1 100%;justify-content:center;overflow:visible}.topdock .nav button{padding:6px 12px}.topdock .spacer{display:none}.topdock .tswitch{margin-left:auto}}
+
+/* logo ANIMES Z: o Z grande vem depois do nome */
+.zlogo .z{margin-left:.14em;margin-right:0;padding-right:.08em}
+
+/* ===== etapa 2: banner em tela cheia e fileiras horizontais ===== */
+body{overflow-x:clip}
+#feat .hero{width:100vw;margin:10px calc(50% - 50vw) 0;border:0;border-radius:0;box-shadow:none;min-height:min(74vh,600px);display:flex;flex-direction:column;justify-content:flex-end}
+#feat .hero-bg{inset:-40px;filter:blur(10px) saturate(1.25);opacity:.7}
+:root:not([data-theme="light"]) #feat .hero::after{background:linear-gradient(90deg,rgba(6,11,31,.9) 8%,rgba(6,11,31,.4) 58%,rgba(6,11,31,.1)),linear-gradient(0deg,var(--bg) 0,rgba(6,11,31,.55) 22%,transparent 55%)}
+#feat .hero-in{flex:1;width:100%;max-width:1180px;margin:0 auto;padding:70px 18px 10px;align-items:flex-end}
+#feat .hero h2{font-size:clamp(34px,6.4vw,76px);line-height:1.02}
+#feat .hero p{max-width:52ch;font-size:16px;-webkit-line-clamp:3}
+#feat .hero-cover{flex-basis:230px}
+#feat .hero-bot{width:100%;max-width:1180px;margin:0 auto;padding:16px 18px 30px}
+.rowsec{margin-top:8px}
+.rowhead{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin:26px 0 2px}
+.rowhead .sec{margin:0}
+.rowarr{display:flex;gap:8px}
+.rowarr button{width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:color-mix(in srgb,var(--surface) 70%,transparent);color:var(--ink);font-size:20px;line-height:1;cursor:pointer;transition:background .2s,border-color .2s,transform .15s}
+.rowarr button:hover{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 22%,transparent)}
+.rowarr button:active{transform:scale(.92)}
+.rowarr button:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+.rowsec .row{gap:18px;padding:12px 4px 20px;scrollbar-width:none;scroll-behavior:auto;-webkit-mask-image:linear-gradient(90deg,#000 94%,transparent);mask-image:linear-gradient(90deg,#000 94%,transparent)}
+.rowsec .row::-webkit-scrollbar{display:none}
+.rowsec .row .cardw{flex:0 0 190px}
+@media (hover:none){.rowarr{display:none}}
+@media (max-width:700px){#feat .hero{min-height:480px}#feat .hero-in{padding:50px 18px 6px}.rowsec .row .cardw{flex-basis:150px}}
+
+/* banner: topo e base se dissolvem no fundo da página, sem linha reta */
+#feat .hero{-webkit-mask-image:linear-gradient(180deg,transparent 0,rgba(0,0,0,.35) 90px,#000 240px,#000 93%,transparent);mask-image:linear-gradient(180deg,transparent 0,rgba(0,0,0,.35) 90px,#000 240px,#000 93%,transparent)}
+#feat .hero{margin-top:-30px}

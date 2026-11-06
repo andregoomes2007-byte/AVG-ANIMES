@@ -112,7 +112,7 @@ function viewAccount(tab){
     $("adata").onclick=function(){var t=function(a){return a.map(function(i){return A[i]&&A[i].t}).filter(Boolean)},
       d={email:user.email,perfil:md(),favoritos:t([...favs]),assistidos:t([...seen]),assistindo:t([...watching]),assistir_mais_tarde:t([...later]),notas:Object.keys(rate).map(function(k){return{anime:A[k]&&A[k].t,nota:rate[k]}})},
       b=new Blob([JSON.stringify(d,null,2)],{type:"application/json"}),u=URL.createObjectURL(b),l=document.createElement("a");
-      l.href=u;l.download="meus-dados-zanime.json";document.body.appendChild(l);l.click();l.remove();setTimeout(function(){URL.revokeObjectURL(u)},1000)};
+      l.href=u;l.download="meus-dados-animes-z.json";document.body.appendChild(l);l.click();l.remove();setTimeout(function(){URL.revokeObjectURL(u)},1000)};
     $("adel").onclick=function(){
       if(!confirm("Apagar a conta e todos os dados salvos nela, inclusive a foto? Isso não pode ser desfeito."))return;
       sb.storage.from("avatars").remove([user.id+"/avatar.jpg"]).then(function(){

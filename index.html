@@ -3,30 +3,30 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>ZANIME: do Z ao A, todo anime em um só lugar</title>
-<meta name="description" content="ZANIME: catálogo com 500 animes. Do Z ao A, todo anime em um só lugar.">
+<title>ANIMES Z: animes do A ao Z</title>
+<meta name="description" content="ANIMES Z: catálogo com 500 animes, do A ao Z.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Exo+2:ital,wght@1,500;1,800;1,900&family=Shippori+Mincho:wght@500;700&family=Zen+Maru+Gothic:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=20261121">
+<link rel="stylesheet" href="style.css?v=20261126">
 </head>
 <body>
+<div class="topdock"><div class="topbar"><button class="tb" id="home">← Início</button><nav class="nav" id="nav" aria-label="Navegação"></nav><button class="tb" id="acc" hidden>Entrar</button><label class="tswitch" title="Alternar tema claro e escuro"><input type="checkbox" id="th" aria-label="Alternar entre tema claro e escuro"><span class="tslider"><div class="tstar tstar_1"></div><div class="tstar tstar_2"></div><div class="tstar tstar_3"></div><svg viewBox="0 0 16 16" class="tcloud" aria-hidden="true"><path transform="matrix(.77976 0 0 .78395-299.99-418.63)" fill="#fff" d="m391.84 540.91c-.421-.329-.949-.524-1.523-.524-1.351 0-2.451 1.084-2.485 2.435-1.395.526-2.388 1.88-2.388 3.466 0 1.874 1.385 3.423 3.182 3.667v.034h12.73v-.006c1.775-.104 3.182-1.584 3.182-3.395 0-1.747-1.309-3.186-2.994-3.379.007-.106.011-.214.011-.322 0-2.707-2.271-4.901-5.072-4.901-2.073 0-3.856 1.202-4.643 2.925"></path></svg></span></label></div></div>
 <div class="wrap">
 <header>
 <div class="rays"></div>
-<div class="topbar"><button class="tb" id="home">← Início</button><nav class="nav" id="nav" aria-label="Navegação"></nav><button class="tb" id="acc" hidden>Entrar</button><label class="tswitch" title="Alternar tema claro e escuro"><input type="checkbox" id="th" aria-label="Alternar entre tema claro e escuro"><span class="tslider"><div class="tstar tstar_1"></div><div class="tstar tstar_2"></div><div class="tstar tstar_3"></div><svg viewBox="0 0 16 16" class="tcloud" aria-hidden="true"><path transform="matrix(.77976 0 0 .78395-299.99-418.63)" fill="#fff" d="m391.84 540.91c-.421-.329-.949-.524-1.523-.524-1.351 0-2.451 1.084-2.485 2.435-1.395.526-2.388 1.88-2.388 3.466 0 1.874 1.385 3.423 3.182 3.667v.034h12.73v-.006c1.775-.104 3.182-1.584 3.182-3.395 0-1.747-1.309-3.186-2.994-3.379.007-.106.011-.214.011-.322 0-2.707-2.271-4.901-5.072-4.901-2.073 0-3.856 1.202-4.643 2.925"></path></svg></span></label></div>
-<h1 class="zlogo" aria-label="ZANIME"><span class="z">Z</span><span class="a">ANIME</span></h1>
-<p class="slogan">Do <b>Z</b> ao <b>A</b>, todo anime em um só lugar.</p>
-<div class="search">
+<h1 class="zlogo" aria-label="ANIMES Z"><span class="a">ANIMES</span><span class="z">Z</span></h1>
+<p class="slogan">Animes do <b>A</b> ao <b>Z</b></p>
+<div class="searchrow"><div class="search">
 <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
 <input id="q" type="search" placeholder="Buscar anime por nome, gênero ou ano" aria-label="Buscar animes">
-</div>
+</div><button class="sbtn" id="ftog" type="button" aria-expanded="false" aria-controls="fpanel"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4"/></svg>Filtros<b id="fcount"></b></button><button class="sbtn hot" id="rnd" type="button">Me surpreenda</button></div>
 <div class="tabs" role="tablist" id="tabs" aria-label="Minhas listas"></div>
 </header>
-<section class="panel" aria-label="Filtros e progresso">
-<div class="filters"><label>Ordenar <select id="sort"><option value="">Destaques primeiro</option><option value="az" selected>Nome (A-Z)</option><option value="new">Mais novos</option><option value="old">Mais antigos</option><option value="mal">Nota do MyAnimeList</option><option value="rate">Minha nota</option><option value="unseen">Não assistidos primeiro</option></select></label><label>Formato <select id="fmt"><option value="">Todos</option><option value="TV">Séries</option><option value="Filme">Filmes</option></select></label><label>Ano <select id="yr"><option value="">Todos</option><option value="2020">2020 em diante</option><option value="2010">2010-2019</option><option value="2000">2000-2009</option><option value="1990">1990-1999</option><option value="1980">Até 1989</option></select></label><label>Nota <select id="minr"><option value="">Qualquer</option><option value="7">7 ou mais</option><option value="7.5">7,5 ou mais</option><option value="8">8 ou mais</option><option value="8.5">8,5 ou mais</option></select></label><label>Situação <select id="stt"><option value="">Todas</option><option value="Em exibição">Em exibição</option><option value="Finalizado">Finalizado</option></select></label><label>Duração <select id="len"><option value="">Qualquer</option><option value="curto">Curtos (até 13 ep.)</option><option value="medio">Médios (14 a 26)</option><option value="longo">Longos (27 ou mais)</option></select></label><button class="tb2 ghost" id="gmulti" type="button">Gêneros<span id="gcount"></span></button><button class="tb2" id="rnd">Me surpreenda</button><button class="tb2 ghost" id="clr" type="button" hidden>Limpar filtros</button></div>
+<section class="panel closed" id="fpanel" aria-label="Filtros e progresso">
+<div class="filters"><label>Ordenar <select id="sort"><option value="">Destaques primeiro</option><option value="az" selected>Nome (A-Z)</option><option value="new">Mais novos</option><option value="old">Mais antigos</option><option value="mal">Nota do MyAnimeList</option><option value="rate">Minha nota</option><option value="unseen">Não assistidos primeiro</option></select></label><label>Formato <select id="fmt"><option value="">Todos</option><option value="TV">Séries</option><option value="Filme">Filmes</option></select></label><label>Ano <select id="yr"><option value="">Todos</option><option value="2020">2020 em diante</option><option value="2010">2010-2019</option><option value="2000">2000-2009</option><option value="1990">1990-1999</option><option value="1980">Até 1989</option></select></label><label>Nota <select id="minr"><option value="">Qualquer</option><option value="7">7 ou mais</option><option value="7.5">7,5 ou mais</option><option value="8">8 ou mais</option><option value="8.5">8,5 ou mais</option></select></label><label>Situação <select id="stt"><option value="">Todas</option><option value="Em exibição">Em exibição</option><option value="Finalizado">Finalizado</option></select></label><label>Duração <select id="len"><option value="">Qualquer</option><option value="curto">Curtos (até 13 ep.)</option><option value="medio">Médios (14 a 26)</option><option value="longo">Longos (27 ou mais)</option></select></label><button class="tb2 ghost" id="gmulti" type="button">Gêneros<span id="gcount"></span></button><button class="tb2 ghost" id="clr" type="button" hidden>Limpar filtros</button></div>
 <div class="prog" hidden><div class="bar"><i id="bar"></i></div><span id="ptxt"></span></div>
 </section>
-<div id="feat"><div class="hero" id="hero"></div><h2 class="sec">Mais bem avaliados <small>entre os animes mais populares</small></h2><div class="row" id="row"></div></div>
+<div id="feat"><div class="hero" id="hero"></div><div id="rows"></div></div>
 <div class="count" id="count" aria-live="polite"></div>
 <main class="grid" id="grid"></main>
 </div>
@@ -90,8 +90,8 @@
 <div class="w-big" lang="ja" aria-hidden="true">アニメ</div>
 <div class="w-core">
 <p class="w-hi">Bem-vindo ao</p>
-<div class="w-title zlogo" aria-label="ZANIME"><span class="z">Z</span><span class="a">ANIME</span></div>
-<p class="w-slogan slogan">Do <b>Z</b> ao <b>A</b>, todo anime em um só lugar.</p>
+<div class="w-title zlogo" aria-label="ANIMES Z"><span class="a">ANIMES</span><span class="z">Z</span></div>
+<p class="w-slogan slogan">Animes do <b>A</b> ao <b>Z</b></p>
 <p class="w-sub">Descubra do que cada anime trata antes de assistir. Busque, explore por gênero e salve seus favoritos.</p>
 <div class="w-stats" hidden><span><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M10 9l5 3-5 3z"/></svg><b id="ns"></b> animes</span><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z"/></svg><b>13</b> gêneros</span><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h10a3 3 0 013 3v13H8a3 3 0 01-3-3z"/><path d="M5 17a3 3 0 013-3h10"/></svg><b>12</b> guias completos</span></div>
 <button class="w-btn w-go" id="enter"><span>Entrar no catálogo</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
@@ -99,13 +99,13 @@
 </div>
 <script src="dados.js?v=20261120"></script>
 <script src="imagens.js?v=20261118"></script>
-<script src="script.js?v=20261122"></script>
+<script src="script.js?v=20261125"></script>
 <script src="genres.js?v=20261119"></script>
 <script src="capas.js?v=20261120"></script>
 <script src="particulas.js?v=20261110"></script>
-<script src="privacidade.js?v=20261121"></script>
+<script src="privacidade.js?v=20261124"></script>
 <script src="config.js?v=20261029"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.js" integrity="sha384-BWcjm9OdFth9TbhCxZPdm+gAOUMAzQy9nmTs12ioXdCcbVnJaPMn+fMUoQCLt60R" crossorigin="anonymous"></script>
-<script src="auth.js?v=20261121"></script>
+<script src="auth.js?v=20261124"></script>
 </body>
 </html>
