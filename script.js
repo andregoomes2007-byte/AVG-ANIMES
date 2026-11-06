@@ -1,5 +1,6 @@
 /* ZANIME: código do site. Os dados ficam em dados.js e as imagens em imagens.js (carregados antes deste arquivo). */
-const tabs=["Todos","Favoritos","Assistidos","Assistindo","Ação","Aventura","Comédia","Drama","Fantasia","Romance","Sci-Fi","Suspense","Terror","Esporte","Slice of Life","Mecha","Sobrenatural"];
+const LT="Assistir mais tarde";
+const tabs=["Todos","Favoritos","Assistidos","Assistindo",LT];
 let tab="Todos",query="",favs=new Set(),sortBy="az",fmt="",yr="",lim=60,minr=0,stt="",len="",gsel=[];
 try{favs=new Set(JSON.parse(localStorage.getItem("favs")||"[]"))}catch(e){}
 let seen=new Set();
@@ -8,6 +9,9 @@ const saveSeen=()=>{try{localStorage.setItem("seen",JSON.stringify([...seen]))}c
 let watching=new Set(),rate={};
 try{watching=new Set(JSON.parse(localStorage.getItem("watching")||"[]"));rate=JSON.parse(localStorage.getItem("rate")||"{}")}catch(e){}
 const saveWatch=()=>{try{localStorage.setItem("watching",JSON.stringify([...watching]))}catch(e){}};
+let later=new Set();
+try{later=new Set(JSON.parse(localStorage.getItem("later")||"[]"))}catch(e){}
+const saveLater=()=>{try{localStorage.setItem("later",JSON.stringify([...later]))}catch(e){}};
 const saveRate=()=>{try{localStorage.setItem("rate",JSON.stringify(rate))}catch(e){}};
 const dec=y=>y>=2020?"2020":y>=2010?"2010":y>=2000?"2000":y>=1990?"1990":"1980";
 const saveFavs=()=>{try{localStorage.setItem("favs",JSON.stringify([...favs]))}catch(e){}};
@@ -37,12 +41,13 @@ if(tab==="Favoritos"&&!favs.has(i))return false;
 if(tab==="Assistidos"&&!seen.has(i))return false;
 if(fmt&&a.f!==fmt)return false;
 if(tab==="Assistindo"&&!watching.has(i))return false;
+if(tab===LT&&!later.has(i))return false;
 if(yr&&dec(a.y)!==yr)return false;
 if(minr&&!(a.mr>=minr))return false;
 if(stt&&a.stt!==stt)return false;
 if(len&&!lenOk(a))return false;
 if(gsel.length&&!gsel.every(g=>a.g.includes(g)))return false;
-if(!["Todos","Favoritos","Assistidos","Assistindo"].includes(tab)&&!a.g.includes(tab))return false;
+if(!tabs.includes(tab)&&!a.g.includes(tab))return false;
 return !q||norm([a.t,a.s,a.sin,...a.g].join(" ")).includes(q);
 });
 }
@@ -73,27 +78,35 @@ case"Mecha":s+=sun;for(let i=0;i<7;i++){const x=R(0,260),y=R(0,340),w=R(30,90),h
 default:s+=sun+stars(14);for(let i=0;i<6;i++)s+=`<path d="M${R(0,300)} 400C${R(0,300)} ${R(200,330)} ${R(0,300)} ${R(100,250)} ${R(0,300)} 0" fill="none" stroke="${i%2?ac:"#fff"}" stroke-width="2.5" opacity=".4"/>`;
 }
 return s+`<text x="150" y="300" text-anchor="middle" font-family="Dela Gothic One,Zen Maru Gothic,sans-serif" font-size="140" fill="#fff" opacity=".93" stroke="rgba(0,0,0,.25)" stroke-width="6" style="paint-order:stroke">${a.k}</text></svg>`}
+const CLK=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>`;
 const EYE=`<svg class="e-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg><svg class="e-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.9 17.9A10.9 10.9 0 0112 19C5 19 1 12 1 12a18.5 18.5 0 015.1-5.9M9.9 5.1A10.9 10.9 0 0112 5c7 0 11 7 11 7a18.5 18.5 0 01-2.2 3.2M1 1l22 22"/></svg>`;
 function epTxt(a){if(a.f==="Filme")return"1 filme";const n=a.ep;return !n?"":typeof n==="number"?`${n} ${n===1?"episódio":"episódios"}`:n}
 // capa: 1) arquivo da pasta capas/  2) imagem embutida (imagens.js)  3) imagem do MyAnimeList  4) desenho gerado por código
 function capaSrc(t){const f=typeof CAPA!=="undefined"&&CAPA[t];return f?"capas/"+f:(typeof IMG!=="undefined"&&IMG[t])||""}
 function art(a){const s=capaSrc(a.t);if(s)return `<img src="${s}" alt="" loading="lazy" decoding="async" data-k="${a.id}">`;return a.img?`<img src="${a.img}" alt="" loading="lazy" referrerpolicy="no-referrer" data-k="${a.id}">`:artSvg(a)}
 document.addEventListener("error",e=>{const t=e.target;if(t&&t.tagName==="IMG"&&t.dataset&&t.dataset.k!==undefined)t.outerHTML=artSvg(A[+t.dataset.k])},true);
-const cardH=({a,i})=>`<div class="cardw${seen.has(i)?" seen":""}${watching.has(i)?" watching":""}" data-w="${i}"><button class="card" data-i="${i}"><div class="cover">${art(a)}<small>${a.f}</small>${a.mr?`<em class="mal">★ ${a.mr}</em>`:""}</div><div class="info"><h3>${a.t}</h3><p>${a.g.join(", ")} · ${a.y}${rate[i]?" · ★ "+rate[i]:""}</p></div></button><span class="badge">Assistido</span><span class="wbadge">Assistindo</span><button class="eye" data-seen="${i}" aria-pressed="${seen.has(i)}" aria-label="Marcar ${a.t} como assistido" title="Marcar como assistido">${EYE}</button></div>`;
+const cardH=({a,i})=>`<div class="cardw${seen.has(i)?" seen":""}${watching.has(i)?" watching":""}" data-w="${i}"><button class="card" data-i="${i}"><div class="cover">${art(a)}<small>${a.f}</small>${a.mr?`<em class="mal">★ ${a.mr}</em>`:""}</div><div class="info"><h3>${a.t}</h3><p>${a.g.join(", ")} · ${a.y}${rate[i]?" · ★ "+rate[i]:""}</p></div></button><span class="badge">Assistido</span><span class="wbadge">Assistindo</span><button class="eye" data-seen="${i}" aria-pressed="${seen.has(i)}" aria-label="Marcar ${a.t} como assistido" title="Marcar como assistido">${EYE}</button><button class="lbtn${later.has(i)?" on":""}" data-later="${i}" aria-pressed="${later.has(i)}" aria-label="Assistir ${a.t} mais tarde" title="Assistir mais tarde">${CLK}</button></div>`;
 function renderTabs(){
-$("tabs").innerHTML=tabs.map(n=>`<button class="tab" role="tab" aria-selected="${n===tab}" data-t="${n}" style="--c:${n==="Todos"?"#FFD23F":n==="Favoritos"?"#FF8FB1":n==="Assistidos"?"#34D399":n==="Assistindo"?"#FBBF24":PAL[n][0]}"><i></i>${n}${n==="Favoritos"?" ("+favs.size+")":n==="Assistidos"?" ("+seen.size+")":n==="Assistindo"?" ("+watching.size+")":""}</button>`).join("");
+const col={Todos:"#FFD23F",Favoritos:"#FF8FB1",Assistidos:"#34D399",Assistindo:"#FBBF24",[LT]:"#60A5FA"},cnt={Favoritos:favs.size,Assistidos:seen.size,Assistindo:watching.size,[LT]:later.size};
+// se um gênero foi escolhido na janela de gêneros, ele aparece como mais uma aba selecionada
+const all=tabs.includes(tab)?tabs:tabs.concat(tab);
+$("tabs").innerHTML=all.map(n=>`<button class="tab" role="tab" aria-selected="${n===tab}" data-t="${n}" style="--c:${col[n]||(PAL[n]?PAL[n][0]:"#FFD23F")}"><i></i>${n}${cnt[n]!==undefined?" ("+cnt[n]+")":""}</button>`).join("");
 }
 function renderGrid(anim){syncFilters();const showF=tab==="Todos"&&!query.trim()&&!fmt&&!yr&&!extraOn();$("feat").hidden=!showF;if(showF)renderRow();$("grid").classList.toggle("anim",!!anim);
 const r=list();
 $("count").textContent=r.length+(r.length===1?" anime encontrado":" animes encontrados");
-if(!r.length){$("grid").innerHTML=`<div class="empty">${tab==="Assistindo"&&!query?"Nenhum anime marcado como assistindo. Abra um anime e toque em Estou assistindo.":tab==="Assistidos"&&!query?"Nenhum anime marcado como assistido. Toque no olhinho de uma capa para marcar.":tab==="Favoritos"&&!query?"Você ainda não favoritou nada. Abra um anime e toque em Favoritar.":"Nada encontrado. Tente outro nome ou afrouxe os filtros."}</div>`;return}
+if(!r.length){$("grid").innerHTML=`<div class="empty">${tab==="Assistindo"&&!query?"Nenhum anime marcado como assistindo. Abra um anime e toque em Estou assistindo.":tab==="Assistidos"&&!query?"Nenhum anime marcado como assistido. Toque no olhinho de uma capa para marcar.":tab===LT&&!query?"Nada na sua lista de assistir mais tarde. Toque no relógio de uma capa para guardar um anime aqui.":tab==="Favoritos"&&!query?"Você ainda não favoritou nada. Abra um anime e toque em Favoritar.":"Nada encontrado. Tente outro nome ou afrouxe os filtros."}</div>`;return}
 const more=n=>n>lim?`<button class="more" data-more>Carregar mais (${n-lim} restantes)</button>`:"";
 if(tab==="Todos"&&!query.trim()&&!sortBy&&!fmt&&!yr&&!extraOn()){
 const f=r.filter(x=>x.a.sin),o=r.filter(x=>!x.a.sin);
 $("grid").innerHTML=`<h2 class="sec">Destaques <small>com sinopse e guia completo</small></h2>`+f.map(cardH).join("")+`<h2 class="sec">Catálogo completo <small>${o.length} animes</small></h2>`+o.slice(0,lim).map(cardH).join("")+more(o.length);
 }else{const s=srt(r);$("grid").innerHTML=s.slice(0,lim).map(cardH).join("")+more(s.length)}
 }
-function toggleSeen(i){seen.has(i)?seen.delete(i):seen.add(i);saveSeen();document.querySelectorAll(`[data-w="${i}"]`).forEach(w=>{w.classList.toggle("seen",seen.has(i));const ey=w.querySelector(".eye");ey.setAttribute("aria-pressed",seen.has(i));ey.classList.remove("pop");void ey.offsetWidth;ey.classList.add("pop")});renderTabs();updateProg();if(tab==="Assistidos")renderGrid()}
+function syncLater(i){document.querySelectorAll(`[data-later="${i}"]`).forEach(b=>{b.classList.toggle("on",later.has(i));b.setAttribute("aria-pressed",later.has(i))})}
+function toggleLater(i){later.has(i)?later.delete(i):later.add(i);saveLater();syncLater(i);renderTabs();if(tab===LT)renderGrid()}
+// quem já foi assistido ou está sendo assistido sai da lista de "mais tarde"
+function dropLater(i){if(later.delete(i)){saveLater();syncLater(i)}}
+function toggleSeen(i){seen.has(i)?seen.delete(i):seen.add(i);if(seen.has(i))dropLater(i);saveSeen();document.querySelectorAll(`[data-w="${i}"]`).forEach(w=>{w.classList.toggle("seen",seen.has(i));const ey=w.querySelector(".eye");ey.setAttribute("aria-pressed",seen.has(i));ey.classList.remove("pop");void ey.offsetWidth;ey.classList.add("pop")});renderTabs();updateProg();if(tab==="Assistidos"||tab===LT)renderGrid()}
 function renderRow(){const t=A.map((a,i)=>({a,i})).filter(x=>x.a.mr&&x.a.mp&&x.a.mp<4000).sort((x,y)=>y.a.mr-x.a.mr).slice(0,14);$("row").innerHTML=t.map(cardH).join("")}
 let FEAT=[],hi=0;
 function drawNav(){$("nav").innerHTML=[["home","Home"],["TV","Séries"],["Filme","Filmes"],["gen","Gêneros"]].map(([k,n])=>`<button data-nav="${k}" class="${(k==="home"&&!fmt)||k===fmt?"on":""}">${n}</button>`).join("")}
@@ -118,19 +131,20 @@ onde:`<a class="btnlink" href="https://www.justwatch.com/br/busca?q=${encodeURIC
 ficha:`<dl>${rows.map(r=>`<dt>${r[0]}</dt><dd>${r[1]}</dd>`).join("")}</dl>${CUR[a.t]||a.f==="Filme"?"":`<p class="note" style="margin-top:12px">Os números do MyAnimeList valem para a obra listada. Séries com várias temporadas podem ter mais episódios no total.</p>`}`
 }[mtab];
 const mt=[["sinopse","Sinopse"],...(a.pra?[["pra","Vale a pena?"]]:[]),["similar","Parecidos"],["onde","Onde assistir"],["ficha","Ficha"]];
-$("modal").innerHTML=`<div class="mhead">${art(a)}<button class="close" aria-label="Fechar">×</button><h2 id="mt">${a.t}</h2></div><div class="mbody"><div class="mtabs" role="tablist">${mt.map(([k,n])=>`<button class="mtab" role="tab" aria-selected="${k===mtab}" data-m="${k}">${n}</button>`).join("")}</div>${body}${[1,2,3,4,5].length?`<div class="stars" role="group" aria-label="Sua nota">${[1,2,3,4,5].map(n=>`<button class="star${(rate[cur]||0)>=n?" on":""}" data-star="${n}" aria-label="${n} estrelas">★</button>`).join("")}</div>`:""}<button class="fav ${watching.has(cur)?"on":""}" data-watching>${watching.has(cur)?"Assistindo agora":"Estou assistindo"}</button> <button class="fav seenb ${seen.has(cur)?"on":""}" data-seenm aria-pressed="${seen.has(cur)}">${seen.has(cur)?"Assistido":"Marcar como assistido"}</button> <button class="fav ${on?"on":""}" data-fav aria-pressed="${on}">${on?"Favoritado":"Favoritar"}</button></div>`;
+$("modal").innerHTML=`<div class="mhead">${art(a)}<button class="close" aria-label="Fechar">×</button><h2 id="mt">${a.t}</h2></div><div class="mbody"><div class="mtabs" role="tablist">${mt.map(([k,n])=>`<button class="mtab" role="tab" aria-selected="${k===mtab}" data-m="${k}">${n}</button>`).join("")}</div>${body}${[1,2,3,4,5].length?`<div class="stars" role="group" aria-label="Sua nota">${[1,2,3,4,5].map(n=>`<button class="star${(rate[cur]||0)>=n?" on":""}" data-star="${n}" aria-label="${n} estrelas">★</button>`).join("")}</div>`:""}<button class="fav ${watching.has(cur)?"on":""}" data-watching>${watching.has(cur)?"Assistindo agora":"Estou assistindo"}</button> <button class="fav ${later.has(cur)?"on":""}" data-latermodal aria-pressed="${later.has(cur)}">${later.has(cur)?"Na lista para depois":"Assistir mais tarde"}</button> <button class="fav seenb ${seen.has(cur)?"on":""}" data-seenm aria-pressed="${seen.has(cur)}">${seen.has(cur)?"Assistido":"Marcar como assistido"}</button> <button class="fav ${on?"on":""}" data-fav aria-pressed="${on}">${on?"Favoritado":"Favoritar"}</button></div>`;
 }
 function closeModal(){$("ov").classList.remove("open")}
 
 $("q").addEventListener("input",e=>{query=e.target.value;lim=60;renderGrid(1)});
 $("tabs").addEventListener("click",e=>{const b=e.target.closest("[data-t]");if(!b)return;tab=b.dataset.t;lim=60;renderTabs();renderGrid(1)});
-$("grid").addEventListener("click",e=>{if(e.target.closest("[data-more]")){lim+=60;renderGrid(1);return}const s=e.target.closest("[data-seen]");if(s)return toggleSeen(+s.dataset.seen);const c=e.target.closest("[data-i]");if(c)openModal(+c.dataset.i)});
+$("grid").addEventListener("click",e=>{if(e.target.closest("[data-more]")){lim+=60;renderGrid(1);return}const s=e.target.closest("[data-seen]");if(s)return toggleSeen(+s.dataset.seen);const lb=e.target.closest("[data-later]");if(lb)return toggleLater(+lb.dataset.later);const c=e.target.closest("[data-i]");if(c)openModal(+c.dataset.i)});
 $("ov").addEventListener("click",e=>{
 if(e.target===$("ov")||e.target.closest(".close"))return closeModal();
 const so=e.target.closest("[data-open]");if(so){cur=+so.dataset.open;mtab="similar";drawModal();$("ov").scrollTop=0;$("modal").scrollTop=0;return}
 const m=e.target.closest("[data-m]");if(m){mtab=m.dataset.m;drawModal();return}
 const st=e.target.closest("[data-star]");if(st){const n=+st.dataset.star;rate[cur]===n?delete rate[cur]:rate[cur]=n;saveRate();drawModal();renderGrid();return}
-if(e.target.closest("[data-watching]")){watching.has(cur)?watching.delete(cur):watching.add(cur);saveWatch();drawModal();renderTabs();renderGrid();return}
+if(e.target.closest("[data-latermodal]")){toggleLater(cur);drawModal();return}
+if(e.target.closest("[data-watching]")){watching.has(cur)?watching.delete(cur):watching.add(cur);if(watching.has(cur))dropLater(cur);saveWatch();drawModal();renderTabs();renderGrid();return}
 if(e.target.closest("[data-seenm]")){toggleSeen(cur);drawModal();return}
 if(e.target.closest("[data-fav]")){favs.has(cur)?favs.delete(cur):favs.add(cur);saveFavs();drawModal();renderTabs();renderGrid()}
 });
@@ -152,9 +166,9 @@ if(typeof window!=="undefined"){window.addEventListener("scroll",()=>$("up").cla
 $("rnd").onclick=()=>{const r=list(),p=r.filter(x=>!seen.has(x.i)),c=p.length?p:r;if(c.length)openModal(c[Math.floor(Math.random()*c.length)].i)};
 FEAT=A.filter(a=>a.sin).map(a=>a.id);hi=Math.floor(Math.random()*FEAT.length);drawHero();drawNav();
 if(typeof matchMedia!=="function"||!matchMedia("(prefers-reduced-motion:reduce)").matches)setInterval(()=>{if(!document.hidden&&!$("hero").matches(":hover")){hi=(hi+1)%FEAT.length;drawHero()}},8000);
-$("hero").addEventListener("click",e=>{const g=e.target.closest("[data-hero]");if(g)return openModal(+g.dataset.hero);const w=e.target.closest("[data-herow]");if(w){const i=+w.dataset.herow;watching.has(i)?watching.delete(i):watching.add(i);saveWatch();drawHero();renderTabs();renderGrid();return}const t=e.target.closest("[data-hi]");if(t){hi=+t.dataset.hi;drawHero();return}if(e.target.closest("[data-heronext]")){hi=(hi+1)%FEAT.length;drawHero()}else if(e.target.closest("[data-heroprev]")){hi=(hi-1+FEAT.length)%FEAT.length;drawHero()}});
+$("hero").addEventListener("click",e=>{const g=e.target.closest("[data-hero]");if(g)return openModal(+g.dataset.hero);const w=e.target.closest("[data-herow]");if(w){const i=+w.dataset.herow;watching.has(i)?watching.delete(i):watching.add(i);if(watching.has(i))dropLater(i);saveWatch();drawHero();renderTabs();renderGrid();return}const t=e.target.closest("[data-hi]");if(t){hi=+t.dataset.hi;drawHero();return}if(e.target.closest("[data-heronext]")){hi=(hi+1)%FEAT.length;drawHero()}else if(e.target.closest("[data-heroprev]")){hi=(hi-1+FEAT.length)%FEAT.length;drawHero()}});
 $("nav").addEventListener("click",e=>{const b=e.target.closest("[data-nav]");if(!b)return;const v=b.dataset.nav;if(v==="gen"){if($("tabs").scrollIntoView)$("tabs").scrollIntoView({behavior:"smooth",block:"center"});return}fmt=v==="home"?"":v;$("fmt").value=fmt;tab="Todos";lim=60;renderTabs();renderGrid(1);drawNav()});
-$("row").addEventListener("click",e=>{const s=e.target.closest("[data-seen]");if(s)return toggleSeen(+s.dataset.seen);const c=e.target.closest("[data-i]");if(c)openModal(+c.dataset.i)});
+$("row").addEventListener("click",e=>{const s=e.target.closest("[data-seen]");if(s)return toggleSeen(+s.dataset.seen);const lb=e.target.closest("[data-later]");if(lb)return toggleLater(+lb.dataset.later);const c=e.target.closest("[data-i]");if(c)openModal(+c.dataset.i)});
 $("home").onclick=()=>{document.documentElement.classList.add("intro");const w=$("welcome");w.classList.add("out");w.style.display="grid";void w.offsetWidth;w.classList.remove("out");$("enter").focus();if(typeof scrollTo==="function")scrollTo(0,0)};
 (function(){const R=rng(11),pal=["#17204f","#1c2a66","#22307a","#2a2f5e","#3a2f5e","#7a3b5e","#2d6a8f","#b88a3d","#1a3a5c"];let b="";
 [[118,222,310],[118,342,310],[118,462,310],[1236,190,260],[1236,300,260]].forEach(([x0,y,w])=>{let x=x0;while(x<x0+w-14){const bw=8+R()*9,bh=34+R()*46;b+=`<rect x="${x.toFixed(1)}" y="${(y-bh).toFixed(1)}" width="${bw.toFixed(1)}" height="${bh.toFixed(1)}" fill="${pal[Math.floor(R()*pal.length)]}"/>`;x+=bw+1.5}});

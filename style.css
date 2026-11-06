@@ -446,3 +446,12 @@ h1.zlogo{font-size:clamp(44px,8.5vw,92px);margin:0 0 4px}
 .priv a,.foot a{color:inherit;text-decoration:underline;text-underline-offset:3px}
 .ack{display:flex;align-items:flex-start;gap:10px;margin:2px 0 16px;font-size:14px;line-height:1.5}
 .ack input{margin-top:3px;width:18px;height:18px;flex:none;accent-color:var(--accent)}
+
+/* abas centralizadas (os gêneros agora ficam na janela de gêneros) */
+.tabs{justify-content:center;flex-wrap:wrap;overflow:visible;padding:4px 0 12px}
+/* botão "assistir mais tarde" na capa */
+.lbtn{position:absolute;top:50px;right:8px;width:36px;height:36px;border-radius:50%;border:2px solid #fff;background:rgba(0,0,0,.45);color:#fff;display:grid;place-items:center;padding:0;cursor:pointer;z-index:2;transition:transform .2s,background .2s}
+.lbtn svg{width:20px;height:20px}
+.lbtn:hover{transform:scale(1.08)}
+.lbtn.on{background:#3B82F6;border-color:#fff}
+.lbtn:focus-visible{outline:2px solid var(--gold);outline-offset:3px}

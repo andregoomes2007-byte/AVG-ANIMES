@@ -16,7 +16,7 @@ function texto(){
   '<h3>Se você criar uma conta</h3><p>Guardamos:</p><ul>'+
   '<li>seu <b>e-mail</b> e sua <b>senha</b> (a senha é guardada de forma protegida pelo serviço de login, e nem o responsável consegue lê-la);</li>'+
   '<li>seu <b>perfil</b>, se você preencher: nome de exibição, texto "sobre você", anime favorito, cor do nome e avatar ou foto;</li>'+
-  '<li>suas <b>marcações</b>: favoritos, assistidos, assistindo agora e notas.</li></ul>'+
+  '<li>suas <b>marcações</b>: favoritos, assistidos, assistindo agora, assistir mais tarde e notas.</li></ul>'+
   '<h3>Para que usamos</h3><p>Apenas para criar e manter sua conta, mostrar seu perfil e sincronizar suas marcações entre seus aparelhos. Não vendemos seus dados, não fazemos publicidade e não enviamos e-mails de divulgação. Os únicos e-mails são o de confirmação da conta e o de recuperação de senha.</p>'+
   '<h3>Base legal</h3><p>Usamos seus dados para prestar o serviço que você pediu ao criar a conta (LGPD, art. 7º, V) e, nos campos opcionais do perfil e na foto, com o seu consentimento (art. 7º, I), que você pode retirar a qualquer momento.</p>'+
   '<h3>Com quem os dados passam</h3><ul>'+

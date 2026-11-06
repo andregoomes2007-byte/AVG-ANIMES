@@ -66,7 +66,7 @@ function stats(){var sv=[...seen],g={},ser=0,fil=0,eps=0;
   var top=Object.keys(g).map(function(k){return[k,g[k]]}).sort(function(x,y){return y[1]-x[1]}).slice(0,4),mx=top.length?top[0][1]:1,pc=Math.round(seen.size/A.length*100);
   function r(l,v){return'<div><dt>'+l+'</dt><dd>'+v+'</dd></div>'}
   return'<div class="abig"><b>'+seen.size+'</b><span>animes assistidos</span></div>'+
-   '<dl class="akv">'+r("Séries",ser)+r("Filmes",fil)+r("Favoritos",favs.size)+r("Assistindo agora",watching.size)+r("Animes avaliados",rs.length)+r("Sua nota média",avg)+r("Episódios (aprox.)",eps)+'</dl>'+
+   '<dl class="akv">'+r("Séries",ser)+r("Filmes",fil)+r("Favoritos",favs.size)+r("Assistindo agora",watching.size)+r("Para assistir depois",later.size)+r("Animes avaliados",rs.length)+r("Sua nota média",avg)+r("Episódios (aprox.)",eps)+'</dl>'+
    '<h3 class="sh">Gêneros que você mais assiste</h3>'+(top.length?top.map(function(t){return'<div class="agb"><span>'+t[0]+'</span><i style="width:'+Math.round(t[1]/mx*100)+'%"></i><em>'+t[1]+'</em></div>'}).join(""):'<p class="note">Marque o olhinho em alguns animes e volte aqui.</p>')}
 function viewAccount(tab){
   if(tab)tabNow=tab;
@@ -110,7 +110,7 @@ function viewAccount(tab){
       sb.auth.updateUser({data:{display_name:n||null,bio:b||null,fav_anime:f||null,name_color:csel||null}}).then(function(x){if(x.error)return msg("Não foi possível salvar.");user=x.data.user;paintBtn();msg("Perfil salvo!",1)})};
     $("aout").onclick=function(){sb.auth.signOut()};
     $("adata").onclick=function(){var t=function(a){return a.map(function(i){return A[i]&&A[i].t}).filter(Boolean)},
-      d={email:user.email,perfil:md(),favoritos:t([...favs]),assistidos:t([...seen]),assistindo:t([...watching]),notas:Object.keys(rate).map(function(k){return{anime:A[k]&&A[k].t,nota:rate[k]}})},
+      d={email:user.email,perfil:md(),favoritos:t([...favs]),assistidos:t([...seen]),assistindo:t([...watching]),assistir_mais_tarde:t([...later]),notas:Object.keys(rate).map(function(k){return{anime:A[k]&&A[k].t,nota:rate[k]}})},
       b=new Blob([JSON.stringify(d,null,2)],{type:"application/json"}),u=URL.createObjectURL(b),l=document.createElement("a");
       l.href=u;l.download="meus-dados-zanime.json";document.body.appendChild(l);l.click();l.remove();setTimeout(function(){URL.revokeObjectURL(u)},1000)};
     $("adel").onclick=function(){
@@ -139,7 +139,7 @@ function submit(mode){
 }
 
 /* ---------- sincronização ---------- */
-function snap(){return{favs:[...favs],seen:[...seen],watching:[...watching],rate:rate}}
+function snap(){return{favs:[...favs],seen:[...seen],watching:[...watching],later:[...later],rate:rate}}
 function union(a,b){return[...new Set([].concat(a||[],b||[]))]}
 function sync(){
   sb.from("user_data").select("data").eq("user_id",user.id).maybeSingle().then(function(r){
@@ -149,8 +149,10 @@ function sync(){
     union(d.favs,[...favs]).forEach(function(i){favs.add(i)});
     union(d.seen,[...seen]).forEach(function(i){seen.add(i)});
     union(d.watching,[...watching]).forEach(function(i){watching.add(i)});
+    union(d.later,[...later]).forEach(function(i){later.add(i)});
+    seen.forEach(function(i){later.delete(i)});watching.forEach(function(i){later.delete(i)});
     Object.assign(rate,d.rate||{},rate);
-    saveFavs();saveSeen();saveWatch();saveRate();
+    saveFavs();saveSeen();saveWatch();saveLater();saveRate();
     applying=false;
     renderTabs();renderGrid(1);updateProg();
     push();
@@ -161,7 +163,7 @@ function push(){
   sb.from("user_data").upsert({user_id:user.id,data:snap(),updated_at:new Date().toISOString()}).then(function(){});
 }
 // percebe quando o site salva uma marcação no aparelho e envia para a conta
-var KEYS={favs:1,seen:1,watching:1,rate:1},orig=Storage.prototype.setItem;
+var KEYS={favs:1,seen:1,watching:1,later:1,rate:1},orig=Storage.prototype.setItem;
 Storage.prototype.setItem=function(k,v){orig.call(this,k,v);
   if(user&&!applying&&KEYS[k]){clearTimeout(timer);timer=setTimeout(push,1200)}};
 
