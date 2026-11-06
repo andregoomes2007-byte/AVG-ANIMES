@@ -21,16 +21,17 @@ const $=id=>document.getElementById(id);
 const extraOn=()=>!!(minr||stt||len||gsel.length);
 function lenOk(a){const n=a.ep;if(a.f==="Filme"||typeof n!=="number"||n<1)return false;return len==="curto"?n<=13:len==="medio"?n>=14&&n<=26:n>=27}
 function syncFilters(){const on=!!(extraOn()||fmt||yr);$("clr").hidden=!on;$("gcount").textContent=gsel.length?" ("+gsel.length+")":"";const nf=[minr,stt,len,yr,fmt].filter(Boolean).length+(gsel.length?1:0);$("fcount").textContent=nf?nf:"";$("ftog").classList.toggle("on",nf>0)}
-// "Parecidos": pontua gêneros em comum (os mais raros valem mais), mesmo estúdio, mesmo formato, ano e nota próximos
+// "Parecidos": o peso principal são os gêneros em comum (gêneros raros valem mais, e gêneros que um tem e o outro não puxam a nota para baixo).
+// Estúdio, formato, ano e nota só desempatam entre animes que já têm gêneros parecidos.
 const GN={};A.forEach(a=>a.g.forEach(g=>{GN[g]=(GN[g]||0)+1}));
+const gw=g=>Math.log(A.length/GN[g]);
 function similares(i,n){const a=A[i];
-return A.map((b,j)=>{if(j===i)return null;let s=0;
-for(const g of a.g)if(b.g.includes(g))s+=Math.log(A.length/GN[g]);
-if(!s)return null;
-s/=Math.sqrt(a.g.length*b.g.length);
-if(a.s&&b.s===a.s)s+=.8;if(a.f===b.f)s+=.5;
-if(a.y&&b.y)s+=Math.max(0,1-Math.abs(a.y-b.y)/20)*.6;
-if(a.mr&&b.mr)s+=Math.max(0,1-Math.abs(a.mr-b.mr)/2)*.4+(b.mr-7)*.08;
+return A.map((b,j)=>{if(j===i)return null;let inter=0,uni=0;
+for(const g of new Set([...a.g,...b.g])){uni+=gw(g);if(a.g.includes(g)&&b.g.includes(g))inter+=gw(g)}
+if(!inter)return null;let s=4*inter/uni;
+if(a.s&&b.s===a.s)s+=.3;if(a.f===b.f)s+=.2;
+if(a.y&&b.y)s+=Math.max(0,1-Math.abs(a.y-b.y)/20)*.3;
+if(a.mr&&b.mr)s+=Math.max(0,1-Math.abs(a.mr-b.mr)/2)*.3+(b.mr-7)*.06;
 return{j,s}}).filter(Boolean).sort((x,y)=>y.s-x.s).slice(0,n)}
 function similarHtml(i){const r=similares(i,8);
 return r.length?`<div class="simgrid">${r.map(({j})=>{const b=A[j];return `<button class="sim" data-open="${j}"><div class="simc">${art(b)}</div><span class="simt">${b.t}</span><span class="sims">${b.y}${b.mr?" · ★ "+b.mr:""}</span></button>`}).join("")}</div>`:`<p class="note">Ainda não encontrei títulos parecidos.</p>`}
@@ -191,3 +192,12 @@ renderTabs();renderGrid();updateProg();$("enter").focus();
 
 // botão "Filtros": abre e fecha o painel de filtros
 $("ftog").addEventListener("click",()=>{const p=$("fpanel"),c=p.classList.toggle("closed");$("ftog").setAttribute("aria-expanded",String(!c))});
+
+// layout: "celular" (padrão, 4 capas por linha) ou "PC" (a página inteira como no computador, só em telas pequenas)
+(function(){const b=$("lay");if(!b)return;
+if(Math.min(screen.width,screen.height)>820)return; // computador: o botão nem aparece
+const vp=document.querySelector('meta[name=viewport]'),isPc=()=>{try{return localStorage.getItem("layout")==="pc"}catch(e){return false}};
+function draw(){const pc=isPc();b.hidden=false;b.textContent=pc?"Modo celular":"Modo PC";b.setAttribute("aria-pressed",String(pc));b.title=pc?"Voltar ao layout do celular":"Ver o site como no computador";
+vp.content=pc?"width=1100, viewport-fit=cover":"width=device-width, initial-scale=1, viewport-fit=cover"}
+b.addEventListener("click",()=>{try{localStorage.setItem("layout",isPc()?"mobile":"pc")}catch(e){}draw()});
+draw()})();

@@ -529,3 +529,23 @@ body{overflow-x:clip}
 /* banner: topo e base se dissolvem no fundo da página, sem linha reta */
 #feat .hero{-webkit-mask-image:linear-gradient(180deg,transparent 0,rgba(0,0,0,.35) 90px,#000 240px,#000 93%,transparent);mask-image:linear-gradient(180deg,transparent 0,rgba(0,0,0,.35) 90px,#000 240px,#000 93%,transparent)}
 #feat .hero{margin-top:-30px}
+
+/* ===== celular: 4 capas por linha, cards compactos ===== */
+.tb#lay{font-size:13px;padding:7px 12px;white-space:nowrap}
+@media (max-width:700px){
+.grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:10px 6px;padding-bottom:36px}
+.cardw .card{border-radius:10px}
+.cardw .info{padding:6px 5px 8px}
+.cardw .info h3{font-size:10.5px;line-height:1.25;margin:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word}
+.cardw .info p{display:none}
+.cardw .cover small{left:4px;bottom:4px;font-size:8px;padding:1px 5px}
+.cardw .cover .mal{right:4px;bottom:4px;font-size:9px;padding:1px 5px}
+.cardw .eye,.cardw .lbtn,.cardw .eye[aria-pressed="true"]{width:26px;height:26px;border-width:1.5px;right:4px}
+.cardw .eye{top:4px}.cardw .lbtn{top:34px}
+.cardw .eye svg,.cardw .lbtn svg{width:14px;height:14px}
+.cardw .badge,.cardw .wbadge{left:4px;top:4px;font-size:8px;padding:1px 5px}
+.rowsec .row{gap:8px}
+.rowsec .row .cardw{flex:0 0 104px}
+.rowhead .sec small{display:none}
+}
+@media (max-width:700px){.cardw .eye,.cardw .lbtn,.cardw .eye[aria-pressed="true"]{width:24px;height:24px}.cardw .lbtn{top:32px}.cardw .eye svg,.cardw .lbtn svg{width:13px;height:13px}}
