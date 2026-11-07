@@ -87,7 +87,10 @@ function epTxt(a){if(a.f==="Filme")return"1 filme";const n=a.ep;return !n?"":typ
 // capa: 1) arquivo da pasta capas/  2) imagem embutida (imagens.js)  3) imagem do MyAnimeList  4) desenho gerado por código
 function capaSrc(t){const f=typeof CAPA!=="undefined"&&CAPA[t];return f?"capas/"+f:(typeof IMG!=="undefined"&&IMG[t])||""}
 function art(a){const s=capaSrc(a.t);if(s)return `<img src="${s}" alt="" loading="lazy" decoding="async" data-k="${a.id}">`;return a.img?`<img src="${a.img}" alt="" loading="lazy" referrerpolicy="no-referrer" data-k="${a.id}">`:artSvg(a)}
-document.addEventListener("error",e=>{const t=e.target;if(t&&t.tagName==="IMG"&&t.dataset&&t.dataset.k!==undefined)t.outerHTML=artSvg(A[+t.dataset.k])},true);
+// imagens.js (8,6 MB) é só a reserva: baixa uma vez, e apenas se alguma capa da pasta capas/ não abrir
+let imgFila=null;const imgEspera=[];
+function carregarReserva(cb){if(typeof IMG!=="undefined")return cb();imgEspera.push(cb);if(imgFila)return;imgFila=document.createElement("script");imgFila.src="imagens.js?v=20261118";imgFila.onload=imgFila.onerror=()=>imgEspera.splice(0).forEach(f=>f());document.head.appendChild(imgFila)}
+document.addEventListener("error",e=>{const t=e.target;if(!t||t.tagName!=="IMG"||!t.dataset||t.dataset.k===undefined)return;const k=+t.dataset.k,troca=()=>{if(t.isConnected)t.outerHTML=artSvg(A[k])};TEMIMG.has(k)?carregarReserva(troca):troca()},true);
 const cardH=({a,i})=>`<div class="cardw${seen.has(i)?" seen":""}${watching.has(i)?" watching":""}" data-w="${i}"><button class="card" data-i="${i}"><div class="cover">${art(a)}<small>${a.f}</small>${a.mr?`<em class="mal">★ ${a.mr}</em>`:""}</div><div class="info"><h3>${a.t}</h3><p>${a.g.join(", ")} · ${a.y}${rate[i]?" · ★ "+rate[i]:""}</p></div></button><span class="badge">Assistido</span><span class="wbadge">Assistindo</span><button class="eye" data-seen="${i}" aria-pressed="${seen.has(i)}" aria-label="Marcar ${a.t} como assistido" title="Marcar como assistido">${EYE}</button><button class="lbtn${later.has(i)?" on":""}" data-later="${i}" aria-pressed="${later.has(i)}" aria-label="Assistir ${a.t} mais tarde" title="Assistir mais tarde">${CLK}</button></div>`;
 function renderTabs(){
 const col={Todos:"#FFD23F",Favoritos:"#FF8FB1",Assistidos:"#34D399",Assistindo:"#FBBF24",[LT]:"#60A5FA"},cnt={Favoritos:favs.size,Assistidos:seen.size,Assistindo:watching.size,[LT]:later.size};
@@ -161,7 +164,7 @@ if(e.target.closest("[data-seenm]")){toggleSeen(cur);drawModal();return}
 if(e.target.closest("[data-fav]")){favs.has(cur)?favs.delete(cur):favs.add(cur);saveFavs();drawModal();renderTabs();renderGrid()}
 });
 document.addEventListener("keydown",e=>{if(e.key==="Escape")closeModal()});
-$("ns").textContent=NV;
+if($("ns"))$("ns").textContent=NV;
 $("enter").onclick=()=>{document.documentElement.classList.remove("intro");$("welcome").classList.add("out");wt=setTimeout(()=>{$("welcome").style.display="none"},550)};
 $("sort").onchange=e=>{sortBy=e.target.value;lim=60;renderGrid(1)};
 $("fmt").onchange=e=>{fmt=e.target.value;lim=60;renderGrid(1);drawNav()};
