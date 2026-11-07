@@ -63,7 +63,7 @@ function badge(t,el){el.textContent="";var a=A.find(function(x){return x.t===t})
 function stats(){var sv=[...seen],g={},ser=0,fil=0,eps=0;
   sv.forEach(function(i){var a=A[i];if(!a)return;a.f==="Filme"?fil++:ser++;(a.g||[]).forEach(function(x){g[x]=(g[x]||0)+1});if(a.f!=="Filme"&&typeof a.ep==="number")eps+=a.ep});
   var rs=Object.values(rate).map(Number).filter(Boolean),avg=rs.length?(rs.reduce(function(x,y){return x+y},0)/rs.length).toFixed(1).replace(".",",")+" de 5":"-";
-  var top=Object.keys(g).map(function(k){return[k,g[k]]}).sort(function(x,y){return y[1]-x[1]}).slice(0,4),mx=top.length?top[0][1]:1,pc=Math.round(seen.size/A.length*100);
+  var top=Object.keys(g).map(function(k){return[k,g[k]]}).sort(function(x,y){return y[1]-x[1]}).slice(0,4),mx=top.length?top[0][1]:1,pc=Math.round(seen.size/NV*100);
   function r(l,v){return'<div><dt>'+l+'</dt><dd>'+v+'</dd></div>'}
   return'<div class="abig"><b>'+seen.size+'</b><span>animes assistidos</span></div>'+
    '<dl class="akv">'+r("Séries",ser)+r("Filmes",fil)+r("Favoritos",favs.size)+r("Assistindo agora",watching.size)+r("Para assistir depois",later.size)+r("Animes avaliados",rs.length)+r("Sua nota média",avg)+r("Episódios (aprox.)",eps)+'</dl>'+
@@ -86,7 +86,7 @@ function viewAccount(tab){
     $("avh").appendChild(avEl(1));$("adn").value=d.n;$("abio").value=d.b;$("afa").value=d.f;$("aem").textContent=user.email;badge(d.f,$("fb"));
     $("wn").textContent=d.n||nm();$("wb").textContent=d.b;
     $("adn").oninput=function(){$("wn").textContent=this.value.trim()||nm()};$("abio").oninput=function(){$("wb").textContent=this.value};
-    A.forEach(function(x){var o=document.createElement("option");o.value=x.t;$("adl").appendChild(o)});
+    A.forEach(function(x){if(x.hid)return;var o=document.createElement("option");o.value=x.t;$("adl").appendChild(o)});
     TOP.forEach(function(t){var b=document.createElement("button");b.type="button";b.className="pre1"+(m.avatar_anime===t&&!avUrl()?" on":"");b.title=t;b.setAttribute("aria-label",t);
       var cs=capaSrc(t);if(cs){var im=document.createElement("img");im.src=cs;im.alt="";b.appendChild(im)}else b.textContent=t.charAt(0);
       b.onclick=function(){keep();sb.storage.from("avatars").remove([user.id+"/avatar.jpg"]).then(function(){upd({avatar_anime:t,avatar_url:null,avatar_preset:null},"Avatar atualizado!")})};$("pre").appendChild(b)});

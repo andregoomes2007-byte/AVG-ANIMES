@@ -549,3 +549,10 @@ body{overflow-x:clip}
 .rowhead .sec small{display:none}
 }
 @media (max-width:700px){.cardw .eye,.cardw .lbtn,.cardw .eye[aria-pressed="true"]{width:24px;height:24px}.cardw .lbtn{top:32px}.cardw .eye svg,.cardw .lbtn svg{width:13px;height:13px}}
+
+/* abas da janela de detalhes: botões com borda */
+.mtabs{gap:10px;border-bottom:0;padding:4px 4px 2px;margin-bottom:14px}
+.mtab{border:1.5px solid var(--line);border-radius:999px;margin:0;padding:8px 20px;background:color-mix(in srgb,var(--surface) 55%,transparent);transition:border-color .2s,background .2s,color .2s}
+.mtab:hover{border-color:var(--accent);color:var(--ink)}
+.mtab[aria-selected="true"]{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 22%,transparent);color:var(--ink)}
+.mtab:focus-visible{outline:2px solid var(--gold);outline-offset:2px}

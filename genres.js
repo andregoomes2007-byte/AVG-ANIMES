@@ -12,7 +12,7 @@ function build(){
   var box=$("gc");box.textContent="";
   var items=multi?Object.keys(PAL):["Todos"].concat(Object.keys(PAL));
   items.forEach(function(n){
-    var c=n==="Todos"?A.length:A.filter(function(a){return a.g.indexOf(n)>-1}).length;
+    var c=n==="Todos"?NV:A.filter(function(a){return!a.hid&&a.g.indexOf(n)>-1}).length;
     var b=document.createElement("button");b.type="button";b.className="tab";b.style.setProperty("--c",n==="Todos"?"#FFD23F":PAL[n][0]);
     if(multi)b.setAttribute("aria-pressed",sel.indexOf(n)>-1?"true":"false");else if(n===tab)b.setAttribute("aria-current","true");
     b.appendChild(document.createElement("i"));b.appendChild(document.createTextNode(n+" ("+c+")"));

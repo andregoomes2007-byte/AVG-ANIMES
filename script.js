@@ -23,10 +23,11 @@ function lenOk(a){const n=a.ep;if(a.f==="Filme"||typeof n!=="number"||n<1)return
 function syncFilters(){const on=!!(extraOn()||fmt||yr);$("clr").hidden=!on;$("gcount").textContent=gsel.length?" ("+gsel.length+")":"";const nf=[minr,stt,len,yr,fmt].filter(Boolean).length+(gsel.length?1:0);$("fcount").textContent=nf?nf:"";$("ftog").classList.toggle("on",nf>0)}
 // "Parecidos": o peso principal são os gêneros em comum (gêneros raros valem mais, e gêneros que um tem e o outro não puxam a nota para baixo).
 // Estúdio, formato, ano e nota só desempatam entre animes que já têm gêneros parecidos.
+const NV=A.filter(a=>!a.hid).length; // total de animes visíveis
 const GN={};A.forEach(a=>a.g.forEach(g=>{GN[g]=(GN[g]||0)+1}));
 const gw=g=>Math.log(A.length/GN[g]);
 function similares(i,n){const a=A[i];
-return A.map((b,j)=>{if(j===i)return null;let inter=0,uni=0;
+return A.map((b,j)=>{if(j===i||b.hid)return null;let inter=0,uni=0;
 for(const g of new Set([...a.g,...b.g])){uni+=gw(g);if(a.g.includes(g)&&b.g.includes(g))inter+=gw(g)}
 if(!inter)return null;let s=4*inter/uni;
 if(a.s&&b.s===a.s)s+=.3;if(a.f===b.f)s+=.2;
@@ -38,6 +39,7 @@ return r.length?`<div class="simgrid">${r.map(({j})=>{const b=A[j];return `<butt
 function list(){
 const q=norm(query.trim());
 return A.map((a,i)=>({a,i})).filter(({a,i})=>{
+if(a.hid)return false;
 if(tab==="Favoritos"&&!favs.has(i))return false;
 if(tab==="Assistidos"&&!seen.has(i))return false;
 if(fmt&&a.f!==fmt)return false;
@@ -116,7 +118,7 @@ const ROWS=[
 ["Romance e dia a dia","",x=>x.a.mr>=7.4&&(x.a.g.includes("Romance")||x.a.g.includes("Slice of Life"))],
 ["Mistério e terror","",x=>x.a.mr>=7.4&&(x.a.g.includes("Suspense")||x.a.g.includes("Terror"))]];
 // fileiras horizontais (cada anime aparece em uma só); guarda a posição da rolagem ao redesenhar
-function renderRow(){const box=$("rows"),old=[...box.querySelectorAll(".row")].map(r=>r.scrollLeft),all=A.map((a,i)=>({a,i})),used=new Set();
+function renderRow(){const box=$("rows"),old=[...box.querySelectorAll(".row")].map(r=>r.scrollLeft),all=A.map((a,i)=>({a,i})).filter(x=>!x.a.hid),used=new Set();
 box.innerHTML=ROWS.map(([t,sub,f])=>{const r=all.filter(x=>f(x)&&!used.has(x.i)).sort((x,y)=>y.a.mr-x.a.mr).slice(0,18);r.forEach(x=>used.add(x.i));
 return r.length?`<section class="rowsec"><div class="rowhead"><h2 class="sec">${t}${sub?` <small>${sub}</small>`:""}</h2><div class="rowarr"><button data-rowprev aria-label="Voltar em ${t}">‹</button><button data-rownext aria-label="Avançar em ${t}">›</button></div></div><div class="row">${r.map(cardH).join("")}</div></section>`:""}).join("");
 box.querySelectorAll(".row").forEach((r,n)=>{r.scrollLeft=old[n]||0})}
@@ -127,7 +129,7 @@ const st=[a.mr?`★ ${a.mr}`:"",epTxt(a),a.mp&&a.mp<=200?`Popularidade #${a.mp}`
 const th=[0,1,2,3,4].map(k=>(hi+k)%FEAT.length).filter((k,j,r)=>r.indexOf(k)===j).map(k=>`<button class="hero-th${k===hi?" on":""}" data-hi="${k}" aria-label="${A[FEAT[k]].t}">${art(A[FEAT[k]])}</button>`).join("");
 $("hero").innerHTML=`<div class="hero-bg">${art(a)}</div><div class="hero-in"><div class="hero-txt"><span class="hero-meta">${a.f==="Filme"?"Filme":"Série"} · ${a.g[0]} · ${a.y}</span><h2>${a.t}</h2><p>${tx.length>230?tx.slice(0,230).replace(/\s\S*$/,"")+"…":tx}</p><div class="hero-st">${st.map(x=>`<span>${x}</span>`).join("")}</div><div class="hero-btns"><button class="hbtn" data-hero="${a.id}">Ver detalhes</button><button class="hbtn ghost" data-herow="${a.id}">${watching.has(a.id)?"✓ Assistindo":"+ Assistindo"}</button></div></div><div class="hero-cover">${art(a)}</div></div><div class="hero-bot"><span class="hero-lbl">Em alta</span><div class="hero-ths">${th}</div><div class="hero-arr"><button data-heroprev aria-label="Anterior">‹</button><button class="on" data-heronext aria-label="Próximo">›</button></div></div>`}
 function srt(r){const s=sortBy;if(s==="az")r.sort((x,y)=>x.a.t.localeCompare(y.a.t,"pt"));else if(s==="new")r.sort((x,y)=>y.a.y-x.a.y);else if(s==="old")r.sort((x,y)=>x.a.y-y.a.y);else if(s==="mal")r.sort((x,y)=>(y.a.mr||0)-(x.a.mr||0));else if(s==="rate")r.sort((x,y)=>(rate[y.i]||0)-(rate[x.i]||0));else if(s==="unseen")r.sort((x,y)=>seen.has(x.i)-seen.has(y.i));else r.sort((x,y)=>!!y.a.sin-!!x.a.sin);return r}
-function updateProg(){const pc=Math.round(seen.size/A.length*100);$("bar").style.width=pc+"%";$("ptxt").textContent=`${seen.size} de ${A.length} assistidos (${pc}%)`}
+function updateProg(){const pc=Math.round(seen.size/NV*100);$("bar").style.width=pc+"%";$("ptxt").textContent=`${seen.size} de ${NV} assistidos (${pc}%)`}
 let cur=null,mtab="sinopse";
 function openModal(i){cur=i;mtab="sinopse";drawModal();$("ov").classList.add("open");$("modal").querySelector(".close").focus()}
 function drawModal(){
@@ -136,13 +138,11 @@ const mal=`https://myanimelist.net/search/all?q=${encodeURIComponent(a.t)}`;
 const tags=`<div class="tags">${a.g.map(g=>`<span>${g}</span>`).join("")}</div>`;
 const rows=[["Ano",a.y],["Estúdio",a.s],["Episódios",epTxt(a)],["Temporadas",a.se?`${a.se} ${a.se===1?"temporada":"temporadas"}`:""],["Situação",a.stt||""],["Duração por episódio",a.du||""],["Formato",a.f],["Nota no MyAnimeList",a.mr?"★ "+a.mr:""],["Ranking no MAL",a.mk?"#"+a.mk:""],["Popularidade",a.mp?"#"+a.mp:""]].filter(r=>r[1]);
 const body={
-sinopse:a.sin?`${tags}<p>${a.sin}</p><p><b>Clima:</b> ${a.vibe}</p>`:a.syn?`${tags}<p>${a.syn}</p>${a.tr?"":`<p class="note">Sinopse original em inglês, do MyAnimeList.</p><a class="btnlink" href="https://translate.google.com/?sl=en&tl=pt&op=translate&text=${encodeURIComponent(a.syn.replace(/&amp;/g,"&").replace(/&lt;/g,"<").replace(/&gt;/g,">"))}" target="_blank" rel="noopener">Traduzir para português</a>`}`:`${tags}<p>Este título ainda não tem sinopse escrita aqui. <a href="${mal}" target="_blank" rel="noopener" style="color:var(--accent)">Ver sinopse no MyAnimeList</a></p>`,
-pra:a.pra?`<p><b>Pra quem é:</b> ${a.pra}</p><p><b>Por onde começar:</b> ${a.ini}</p>`:"",
+sinopse:a.sin?`${tags}<p>${a.sin}</p><p><b>Clima:</b> ${a.vibe}</p>`:a.syn?`${tags}<p>${a.syn}</p>${a.tr?"":`<a class="btnlink" href="https://translate.google.com/?sl=en&tl=pt&op=translate&text=${encodeURIComponent(a.syn.replace(/&amp;/g,"&").replace(/&lt;/g,"<").replace(/&gt;/g,">"))}" target="_blank" rel="noopener">Traduzir para português</a>`}`:`${tags}<p>Este título ainda não tem sinopse escrita aqui. <a href="${mal}" target="_blank" rel="noopener" style="color:var(--accent)">Ver sinopse no MyAnimeList</a></p>`,
 similar:mtab==="similar"?similarHtml(cur):"",
-onde:`<a class="btnlink" href="https://www.justwatch.com/br/busca?q=${encodeURIComponent(a.t)}" target="_blank" rel="noopener">Ver onde assistir ↗</a>`,
-ficha:`<dl>${rows.map(r=>`<dt>${r[0]}</dt><dd>${r[1]}</dd>`).join("")}</dl>${CUR[a.t]||a.f==="Filme"?"":`<p class="note" style="margin-top:12px">Os números do MyAnimeList valem para a obra listada. Séries com várias temporadas podem ter mais episódios no total.</p>`}`
+ficha:`<dl>${rows.map(r=>`<dt>${r[0]}</dt><dd>${r[1]}</dd>`).join("")}</dl>`
 }[mtab];
-const mt=[["sinopse","Sinopse"],...(a.pra?[["pra","Vale a pena?"]]:[]),["similar","Parecidos"],["onde","Onde assistir"],["ficha","Ficha"]];
+const mt=[["sinopse","Sinopse"],["similar","Parecidos"],["ficha","Ficha"]];
 $("modal").innerHTML=`<div class="mhead">${art(a)}<button class="close" aria-label="Fechar">×</button><h2 id="mt">${a.t}</h2></div><div class="mbody"><div class="mtabs" role="tablist">${mt.map(([k,n])=>`<button class="mtab" role="tab" aria-selected="${k===mtab}" data-m="${k}">${n}</button>`).join("")}</div>${body}${[1,2,3,4,5].length?`<div class="stars" role="group" aria-label="Sua nota">${[1,2,3,4,5].map(n=>`<button class="star${(rate[cur]||0)>=n?" on":""}" data-star="${n}" aria-label="${n} estrelas">★</button>`).join("")}</div>`:""}<button class="fav ${watching.has(cur)?"on":""}" data-watching>${watching.has(cur)?"Assistindo agora":"Estou assistindo"}</button> <button class="fav ${later.has(cur)?"on":""}" data-latermodal aria-pressed="${later.has(cur)}">${later.has(cur)?"Na lista para depois":"Assistir mais tarde"}</button> <button class="fav seenb ${seen.has(cur)?"on":""}" data-seenm aria-pressed="${seen.has(cur)}">${seen.has(cur)?"Assistido":"Marcar como assistido"}</button> <button class="fav ${on?"on":""}" data-fav aria-pressed="${on}">${on?"Favoritado":"Favoritar"}</button></div>`;
 }
 function closeModal(){$("ov").classList.remove("open")}
@@ -161,7 +161,7 @@ if(e.target.closest("[data-seenm]")){toggleSeen(cur);drawModal();return}
 if(e.target.closest("[data-fav]")){favs.has(cur)?favs.delete(cur):favs.add(cur);saveFavs();drawModal();renderTabs();renderGrid()}
 });
 document.addEventListener("keydown",e=>{if(e.key==="Escape")closeModal()});
-$("ns").textContent=A.length;
+$("ns").textContent=NV;
 $("enter").onclick=()=>{document.documentElement.classList.remove("intro");$("welcome").classList.add("out");wt=setTimeout(()=>{$("welcome").style.display="none"},550)};
 $("sort").onchange=e=>{sortBy=e.target.value;lim=60;renderGrid(1)};
 $("fmt").onchange=e=>{fmt=e.target.value;lim=60;renderGrid(1);drawNav()};
@@ -176,7 +176,7 @@ let th0="dark";try{th0=localStorage.getItem("theme")||"dark"}catch(e){}setTheme(
 let wt;
 if(typeof window!=="undefined"){window.addEventListener("scroll",()=>$("up").classList.toggle("show",window.scrollY>700),{passive:true});$("up").onclick=()=>window.scrollTo({top:0,behavior:"smooth"})}
 $("rnd").onclick=()=>{const r=list(),p=r.filter(x=>!seen.has(x.i)),c=p.length?p:r;if(c.length)openModal(c[Math.floor(Math.random()*c.length)].i)};
-FEAT=A.filter(a=>a.sin).map(a=>a.id);hi=Math.floor(Math.random()*FEAT.length);drawHero();drawNav();
+FEAT=A.filter(a=>a.sin&&!a.hid).map(a=>a.id);hi=Math.floor(Math.random()*FEAT.length);drawHero();drawNav();
 if(typeof matchMedia!=="function"||!matchMedia("(prefers-reduced-motion:reduce)").matches)setInterval(()=>{if(!document.hidden&&!$("hero").matches(":hover")){hi=(hi+1)%FEAT.length;drawHero()}},8000);
 $("hero").addEventListener("click",e=>{const g=e.target.closest("[data-hero]");if(g)return openModal(+g.dataset.hero);const w=e.target.closest("[data-herow]");if(w){const i=+w.dataset.herow;watching.has(i)?watching.delete(i):watching.add(i);if(watching.has(i))dropLater(i);saveWatch();drawHero();renderTabs();renderGrid();return}const t=e.target.closest("[data-hi]");if(t){hi=+t.dataset.hi;drawHero();return}if(e.target.closest("[data-heronext]")){hi=(hi+1)%FEAT.length;drawHero()}else if(e.target.closest("[data-heroprev]")){hi=(hi-1+FEAT.length)%FEAT.length;drawHero()}});
 $("nav").addEventListener("click",e=>{const b=e.target.closest("[data-nav]");if(!b)return;const v=b.dataset.nav;if(v==="gen"){if($("tabs").scrollIntoView)$("tabs").scrollIntoView({behavior:"smooth",block:"center"});return}if(v==="home"){query="";$("q").value="";minr=0;stt="";len="";gsel=[];yr="";sortBy="az";["minr","stt","len","yr"].forEach(k=>{$(k).value=""});$("sort").value="az"}fmt=v==="home"?"":v;$("fmt").value=fmt;tab="Todos";lim=60;renderTabs();renderGrid(1);drawNav()});
@@ -195,7 +195,7 @@ $("ftog").addEventListener("click",()=>{const p=$("fpanel"),c=p.classList.toggle
 
 // layout: "celular" (padrão, 4 capas por linha) ou "PC" (a página inteira como no computador, só em telas pequenas)
 (function(){const b=$("lay");if(!b)return;
-if(Math.min(screen.width,screen.height)>820)return; // computador: o botão nem aparece
+if(!matchMedia("(pointer:coarse)").matches)return; // computador (mouse): o botão nem aparece
 const vp=document.querySelector('meta[name=viewport]'),isPc=()=>{try{return localStorage.getItem("layout")==="pc"}catch(e){return false}};
 function draw(){const pc=isPc();b.hidden=false;b.textContent=pc?"Modo celular":"Modo PC";b.setAttribute("aria-pressed",String(pc));b.title=pc?"Voltar ao layout do celular":"Ver o site como no computador";
 vp.content=pc?"width=1100, viewport-fit=cover":"width=device-width, initial-scale=1, viewport-fit=cover"}
