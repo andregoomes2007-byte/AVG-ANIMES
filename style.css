@@ -573,3 +573,27 @@ body{overflow-x:clip}
 
 }
 @media (max-width:760px){.welcome .w-core{bottom:calc(34px + env(safe-area-inset-bottom,0px))}}
+
+/* ===== episódio atual, importar lista ===== */
+.epl{display:block;margin-top:2px;font-size:12px;font-weight:700;color:#FBBF24}
+.epbox{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:14px 0 4px;padding:10px 14px;border:1.5px solid var(--line);border-radius:14px;background:color-mix(in srgb,var(--surface) 55%,transparent)}
+.epbox>span{font-weight:700}
+.epbox button:not(.lnk){width:34px;height:34px;border-radius:50%;border:1.5px solid var(--accent);background:transparent;color:var(--ink);font-size:20px;line-height:1;cursor:pointer;padding:0}
+.epbox button:not(.lnk):hover:not(:disabled){background:color-mix(in srgb,var(--accent) 24%,transparent)}
+.epbox button:disabled{opacity:.35;cursor:default}
+.epbox button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.epbox b{min-width:28px;text-align:center;font-size:18px}
+.epbox small{color:var(--muted)}
+.epbox .lnk{margin-left:auto;background:none;border:0;color:var(--accent);font:inherit;font-weight:700;cursor:pointer;text-decoration:underline}
+.isteps{margin:10px 0 12px 20px;line-height:1.65}
+.isteps a{color:var(--accent)}
+#ifile{display:block;max-width:100%;margin:6px 0 12px;color:var(--ink)}
+.ires-t{margin:10px 0;font-size:16px}
+.ires-l{margin:6px 0 10px 18px;line-height:1.7}
+.ires-f{margin:10px 0;border:1px solid var(--line);border-radius:10px;padding:8px 12px}
+.ires-f summary{cursor:pointer;font-weight:700}
+.ires-f ul{margin:8px 0 2px 16px;max-height:200px;overflow:auto;font-size:13px;color:var(--muted)}
+.ires-b{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.ierr{color:#fca5a5;margin:10px 0}
+@media (max-width:700px){.cardw .info .epl{font-size:9px}.rowsec .row .cardw .info .epl{font-size:9px}}
+.mact .epbox{margin:2px 0;width:100%;box-sizing:border-box}

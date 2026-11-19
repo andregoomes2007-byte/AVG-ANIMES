@@ -110,7 +110,7 @@ function viewAccount(tab){
       sb.auth.updateUser({data:{display_name:n||null,bio:b||null,fav_anime:f||null,name_color:csel||null}}).then(function(x){if(x.error)return msg("Não foi possível salvar.");user=x.data.user;paintBtn();msg("Perfil salvo!",1)})};
     $("aout").onclick=function(){sb.auth.signOut()};
     $("adata").onclick=function(){var t=function(a){return a.map(function(i){return A[i]&&A[i].t}).filter(Boolean)},
-      d={email:user.email,perfil:md(),favoritos:t([...favs]),assistidos:t([...seen]),assistindo:t([...watching]),assistir_mais_tarde:t([...later]),notas:Object.keys(rate).map(function(k){return{anime:A[k]&&A[k].t,nota:rate[k]}})},
+      d={email:user.email,perfil:md(),favoritos:t([...favs]),assistidos:t([...seen]),assistindo:t([...watching]),assistir_mais_tarde:t([...later]),episodio_atual:Object.keys(prog).map(function(k){return{anime:A[k]&&A[k].t,episodio:prog[k][0]}}),notas:Object.keys(rate).map(function(k){return{anime:A[k]&&A[k].t,nota:rate[k]}})},
       b=new Blob([JSON.stringify(d,null,2)],{type:"application/json"}),u=URL.createObjectURL(b),l=document.createElement("a");
       l.href=u;l.download="meus-dados-animes-z.json";document.body.appendChild(l);l.click();l.remove();setTimeout(function(){URL.revokeObjectURL(u)},1000)};
     $("adel").onclick=function(){
@@ -139,7 +139,7 @@ function submit(mode){
 }
 
 /* ---------- sincronização ---------- */
-function snap(){return{favs:[...favs],seen:[...seen],watching:[...watching],later:[...later],rate:rate}}
+function snap(){return{favs:[...favs],seen:[...seen],watching:[...watching],later:[...later],rate:rate,prog:prog}}
 function union(a,b){return[...new Set([].concat(a||[],b||[]))]}
 function sync(){
   sb.from("user_data").select("data").eq("user_id",user.id).maybeSingle().then(function(r){
@@ -152,7 +152,8 @@ function sync(){
     union(d.later,[...later]).forEach(function(i){later.add(i)});
     seen.forEach(function(i){later.delete(i)});watching.forEach(function(i){later.delete(i)});
     Object.assign(rate,d.rate||{},rate);
-    saveFavs();saveSeen();saveWatch();saveLater();saveRate();
+    Object.keys(d.prog||{}).forEach(function(k){if(!prog[k]||(d.prog[k][1]||0)>(prog[k][1]||0))prog[k]=d.prog[k]});
+    saveFavs();saveSeen();saveWatch();saveLater();saveRate();saveProg();
     applying=false;
     renderTabs();renderGrid(1);updateProg();
     push();
@@ -163,7 +164,7 @@ function push(){
   sb.from("user_data").upsert({user_id:user.id,data:snap(),updated_at:new Date().toISOString()}).then(function(){});
 }
 // percebe quando o site salva uma marcação no aparelho e envia para a conta
-var KEYS={favs:1,seen:1,watching:1,later:1,rate:1},orig=Storage.prototype.setItem;
+var KEYS={favs:1,seen:1,watching:1,later:1,rate:1,prog:1},orig=Storage.prototype.setItem;
 Storage.prototype.setItem=function(k,v){orig.call(this,k,v);
   if(user&&!applying&&KEYS[k]){clearTimeout(timer);timer=setTimeout(push,1200)}};
 

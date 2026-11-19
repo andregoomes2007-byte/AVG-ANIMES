@@ -9,6 +9,12 @@ const saveSeen=()=>{try{localStorage.setItem("seen",JSON.stringify([...seen]))}c
 let watching=new Set(),rate={};
 try{watching=new Set(JSON.parse(localStorage.getItem("watching")||"[]"));rate=JSON.parse(localStorage.getItem("rate")||"{}")}catch(e){}
 const saveWatch=()=>{try{localStorage.setItem("watching",JSON.stringify([...watching]))}catch(e){}};
+// episódio em que você parou: prog[posição]=[episódio, momento]
+let prog={};try{prog=JSON.parse(localStorage.getItem("prog")||"{}")}catch(e){}
+const saveProg=()=>{try{localStorage.setItem("prog",JSON.stringify(prog))}catch(e){}};
+const epAtual=i=>(prog[i]&&prog[i][0])||0;
+const epTotal=i=>{const n=A[i].ep;return A[i].f!=="Filme"&&typeof n==="number"?n:0};
+function setEp(i,n){const t=epTotal(i);n=Math.max(0,Math.min(t||9999,n));if(n)prog[i]=[n,Math.floor(Date.now()/1000)];else delete prog[i];saveProg()}
 let later=new Set();
 try{later=new Set(JSON.parse(localStorage.getItem("later")||"[]"))}catch(e){}
 const saveLater=()=>{try{localStorage.setItem("later",JSON.stringify([...later]))}catch(e){}};
@@ -91,7 +97,7 @@ function art(a){const s=capaSrc(a.t);if(s)return `<img src="${s}" alt="" loading
 let imgFila=null;const imgEspera=[];
 function carregarReserva(cb){if(typeof IMG!=="undefined")return cb();imgEspera.push(cb);if(imgFila)return;imgFila=document.createElement("script");imgFila.src="imagens.js?v=20261118";imgFila.onload=imgFila.onerror=()=>imgEspera.splice(0).forEach(f=>f());document.head.appendChild(imgFila)}
 document.addEventListener("error",e=>{const t=e.target;if(!t||t.tagName!=="IMG"||!t.dataset||t.dataset.k===undefined)return;const k=+t.dataset.k,troca=()=>{if(t.isConnected)t.outerHTML=artSvg(A[k])};TEMIMG.has(k)?carregarReserva(troca):troca()},true);
-const cardH=({a,i})=>`<div class="cardw${seen.has(i)?" seen":""}${watching.has(i)?" watching":""}" data-w="${i}"><button class="card" data-i="${i}"><div class="cover">${art(a)}<small>${a.f}</small>${a.mr?`<em class="mal">★ ${a.mr}</em>`:""}</div><div class="info"><h3>${a.t}</h3><p>${a.g.join(", ")} · ${a.y}${rate[i]?" · ★ "+rate[i]:""}</p></div></button><span class="badge">Assistido</span><span class="wbadge">Assistindo</span><button class="eye" data-seen="${i}" aria-pressed="${seen.has(i)}" aria-label="Marcar ${a.t} como assistido" title="Marcar como assistido">${EYE}</button><button class="lbtn${later.has(i)?" on":""}" data-later="${i}" aria-pressed="${later.has(i)}" aria-label="Assistir ${a.t} mais tarde" title="Assistir mais tarde">${CLK}</button></div>`;
+const cardH=({a,i})=>`<div class="cardw${seen.has(i)?" seen":""}${watching.has(i)?" watching":""}" data-w="${i}"><button class="card" data-i="${i}"><div class="cover">${art(a)}<small>${a.f}</small>${a.mr?`<em class="mal">★ ${a.mr}</em>`:""}</div><div class="info"><h3>${a.t}</h3>${watching.has(i)&&epAtual(i)?`<span class="epl">Ep ${epAtual(i)}${epTotal(i)?" de "+epTotal(i):""}</span>`:""}<p>${a.g.join(", ")} · ${a.y}${rate[i]?" · ★ "+rate[i]:""}</p></div></button><span class="badge">Assistido</span><span class="wbadge">Assistindo</span><button class="eye" data-seen="${i}" aria-pressed="${seen.has(i)}" aria-label="Marcar ${a.t} como assistido" title="Marcar como assistido">${EYE}</button><button class="lbtn${later.has(i)?" on":""}" data-later="${i}" aria-pressed="${later.has(i)}" aria-label="Assistir ${a.t} mais tarde" title="Assistir mais tarde">${CLK}</button></div>`;
 function renderTabs(){
 const col={Todos:"#FFD23F",Favoritos:"#FF8FB1",Assistidos:"#34D399",Assistindo:"#FBBF24",[LT]:"#60A5FA"},cnt={Favoritos:favs.size,Assistidos:seen.size,Assistindo:watching.size,[LT]:later.size};
 // se um gênero foi escolhido na janela de gêneros, ele aparece como mais uma aba selecionada
@@ -120,11 +126,27 @@ const ROWS=[
 ["Ação e aventura","",x=>x.a.mr>=7.6&&(x.a.g.includes("Ação")||x.a.g.includes("Aventura"))],
 ["Romance e dia a dia","",x=>x.a.mr>=7.4&&(x.a.g.includes("Romance")||x.a.g.includes("Slice of Life"))],
 ["Mistério e terror","",x=>x.a.mr>=7.4&&(x.a.g.includes("Suspense")||x.a.g.includes("Terror"))]];
+// recomendações: os seus favoritos, notas altas e assistidos viram "sementes"; os animes mais parecidos com elas sobem
+function sementes(){const m=new Map(),add=(i,w)=>{if(A[i]&&!A[i].hid)m.set(i,(m.get(i)||0)+w)};
+favs.forEach(i=>add(i,2));Object.keys(rate).forEach(k=>{if(rate[k]>=4)add(+k,rate[k]-2)});seen.forEach(i=>add(i,1));
+return[...m].map(([i,w])=>({i,w})).sort((x,y)=>y.w-x.w).slice(0,10)}
+function recomendar(){const sem=sementes();if(!sem.length)return null;
+const ja=new Set([...favs,...seen,...watching,...later]),pts=new Map(),porq=[];
+sem.forEach(({i,w},n)=>{const sim=similares(i,60).filter(x=>!ja.has(x.j));sim.forEach(({j,s})=>pts.set(j,(pts.get(j)||0)+s*w));
+if(n<2)porq.push({i,fav:favs.has(i)||(rate[i]||0)>=4,items:sim.slice(0,14).map(x=>x.j)})});
+return{geral:[...pts].sort((x,y)=>y[1]-x[1]).slice(0,12).map(x=>x[0]),porq}}
+const rowHtml=(t,sub,items)=>`<section class="rowsec" data-k="${t.replace(/"/g,"&quot;")}"><div class="rowhead"><h2 class="sec">${t}${sub?` <small>${sub}</small>`:""}</h2><div class="rowarr"><button data-rowprev aria-label="Voltar em ${t}">‹</button><button data-rownext aria-label="Avançar em ${t}">›</button></div></div><div class="row">${items.map(cardH).join("")}</div></section>`;
 // fileiras horizontais (cada anime aparece em uma só); guarda a posição da rolagem ao redesenhar
-function renderRow(){const box=$("rows"),old=[...box.querySelectorAll(".row")].map(r=>r.scrollLeft),all=A.map((a,i)=>({a,i})).filter(x=>!x.a.hid),used=new Set();
-box.innerHTML=ROWS.map(([t,sub,f])=>{const r=all.filter(x=>f(x)&&!used.has(x.i)).sort((x,y)=>y.a.mr-x.a.mr).slice(0,18);r.forEach(x=>used.add(x.i));
-return r.length?`<section class="rowsec"><div class="rowhead"><h2 class="sec">${t}${sub?` <small>${sub}</small>`:""}</h2><div class="rowarr"><button data-rowprev aria-label="Voltar em ${t}">‹</button><button data-rownext aria-label="Avançar em ${t}">›</button></div></div><div class="row">${r.map(cardH).join("")}</div></section>`:""}).join("");
-box.querySelectorAll(".row").forEach((r,n)=>{r.scrollLeft=old[n]||0})}
+function renderRow(){const box=$("rows"),old={};box.querySelectorAll(".rowsec").forEach(x=>{old[x.dataset.k]=x.querySelector(".row").scrollLeft});
+const all=A.map((a,i)=>({a,i})).filter(x=>!x.a.hid),used=new Set(),out=[],it=l=>l.map(i=>({a:A[i],i}));
+const cont=[...watching].filter(i=>!A[i].hid).sort((x,y)=>((prog[y]||[0,0])[1])-((prog[x]||[0,0])[1])).slice(0,18);
+if(cont.length){out.push(rowHtml("Continue assistindo","de onde você parou",it(cont)));cont.forEach(i=>used.add(i))}
+const rec=recomendar();
+if(rec){const g=rec.geral.filter(i=>!used.has(i));if(g.length>=4){out.push(rowHtml("Recomendados para você","com base nos seus favoritos e notas",it(g)));g.forEach(i=>used.add(i))}
+rec.porq.forEach(p=>{const l=p.items.filter(i=>!used.has(i));if(l.length>=4){out.push(rowHtml(`Porque você ${p.fav?"curtiu":"assistiu"} ${A[p.i].t}`,"",it(l)));l.forEach(i=>used.add(i))}})}
+ROWS.forEach(([t,sub,f])=>{const r=all.filter(x=>f(x)&&!used.has(x.i)).sort((x,y)=>y.a.mr-x.a.mr).slice(0,18);r.forEach(x=>used.add(x.i));if(r.length)out.push(rowHtml(t,sub,r))});
+box.innerHTML=out.join("");
+box.querySelectorAll(".rowsec").forEach(x=>{x.querySelector(".row").scrollLeft=old[x.dataset.k]||0})}
 let FEAT=[],hi=0;
 function drawNav(){$("nav").innerHTML=[["home","Home"],["TV","Séries"],["Filme","Filmes"],["gen","Gêneros"]].map(([k,n])=>`<button data-nav="${k}" class="${(k==="home"&&!fmt)||k===fmt?"on":""}">${n}</button>`).join("")}
 function drawHero(){const a=A[FEAT[hi]];if(!a)return;const tx=a.sin||a.syn||"";
@@ -135,8 +157,15 @@ function srt(r){const s=sortBy;if(s==="az")r.sort((x,y)=>x.a.t.localeCompare(y.a
 function updateProg(){const pc=Math.round(seen.size/NV*100);$("bar").style.width=pc+"%";$("ptxt").textContent=`${seen.size} de ${NV} assistidos (${pc}%)`}
 let cur=null,mtab="sinopse";
 function openModal(i){cur=i;mtab="sinopse";drawModal();$("ov").classList.add("open");$("modal").querySelector(".close").focus()}
+function hashAnime(i){try{history.replaceState(null,"",location.pathname+location.search+(i===null?"":"#a="+i))}catch(e){}}
+function compartilhar(i,btn){const url=location.href.split("#")[0]+"#a="+i;
+const ok=()=>{btn.textContent="Link copiado!";setTimeout(()=>{if(btn.isConnected)btn.textContent="Compartilhar"},2200)};
+if(navigator.share&&matchMedia("(pointer:coarse)").matches){navigator.share({title:A[i].t+" - ANIMES Z",url}).catch(()=>{});return}
+if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(url).then(ok,()=>prompt("Copie o link:",url));else prompt("Copie o link:",url)}
 function drawModal(){
-const a=A[cur],on=favs.has(cur);
+hashAnime(cur);
+const a=A[cur],on=favs.has(cur),tot=epTotal(cur),ne=epAtual(cur);
+const stepper=watching.has(cur)&&a.f!=="Filme"?`<div class="epbox"><span>Episódio atual</span><button type="button" data-epm aria-label="Voltar um episódio"${ne?"":" disabled"}>−</button><b>${ne||"—"}</b><button type="button" data-epp aria-label="Avançar um episódio"${tot&&ne>=tot?" disabled":""}>+</button>${tot?`<small>de ${tot}</small>`:""}${tot&&ne>=tot?`<button type="button" class="lnk" data-epdone>Terminei: marcar como assistido</button>`:""}</div>`:"";
 const mal=`https://myanimelist.net/search/all?q=${encodeURIComponent(a.t)}`;
 const tags=`<div class="tags">${a.g.map(g=>`<span>${g}</span>`).join("")}</div>`;
 const rows=[["Ano",a.y],["Estúdio",a.s],["Episódios",epTxt(a)],["Temporadas",a.se?`${a.se} ${a.se===1?"temporada":"temporadas"}`:""],["Situação",a.stt||""],["Duração por episódio",a.du||""],["Formato",a.f],["Nota no MyAnimeList",a.mr?"★ "+a.mr:""],["Ranking no MAL",a.mk?"#"+a.mk:""],["Popularidade",a.mp?"#"+a.mp:""]].filter(r=>r[1]);
@@ -146,9 +175,9 @@ similar:mtab==="similar"?similarHtml(cur):"",
 ficha:`<dl>${rows.map(r=>`<dt>${r[0]}</dt><dd>${r[1]}</dd>`).join("")}</dl>`
 }[mtab];
 const mt=[["sinopse","Sinopse"],["similar","Parecidos"],["ficha","Ficha"]];
-$("modal").innerHTML=`<div class="mhead">${art(a)}<button class="close" aria-label="Fechar">×</button><h2 id="mt">${a.t}</h2></div><div class="mbody"><div class="mtabs" role="tablist">${mt.map(([k,n])=>`<button class="mtab" role="tab" aria-selected="${k===mtab}" data-m="${k}">${n}</button>`).join("")}</div>${body}${[1,2,3,4,5].length?`<div class="stars" role="group" aria-label="Sua nota">${[1,2,3,4,5].map(n=>`<button class="star${(rate[cur]||0)>=n?" on":""}" data-star="${n}" aria-label="${n} estrelas">★</button>`).join("")}</div>`:""}<button class="fav ${watching.has(cur)?"on":""}" data-watching>${watching.has(cur)?"Assistindo agora":"Estou assistindo"}</button> <button class="fav ${later.has(cur)?"on":""}" data-latermodal aria-pressed="${later.has(cur)}">${later.has(cur)?"Na lista para depois":"Assistir mais tarde"}</button> <button class="fav seenb ${seen.has(cur)?"on":""}" data-seenm aria-pressed="${seen.has(cur)}">${seen.has(cur)?"Assistido":"Marcar como assistido"}</button> <button class="fav ${on?"on":""}" data-fav aria-pressed="${on}">${on?"Favoritado":"Favoritar"}</button></div>`;
+$("modal").innerHTML=`<div class="mhead">${art(a)}<button class="close" aria-label="Fechar">×</button><h2 id="mt">${a.t}</h2></div><div class="mbody"><div class="mtabs" role="tablist">${mt.map(([k,n])=>`<button class="mtab" role="tab" aria-selected="${k===mtab}" data-m="${k}">${n}</button>`).join("")}</div>${body}${[1,2,3,4,5].length?`<div class="stars" role="group" aria-label="Sua nota">${[1,2,3,4,5].map(n=>`<button class="star${(rate[cur]||0)>=n?" on":""}" data-star="${n}" aria-label="${n} estrelas">★</button>`).join("")}</div>`:""}${stepper}<button class="fav ${watching.has(cur)?"on":""}" data-watching>${watching.has(cur)?"Assistindo agora":"Estou assistindo"}</button> <button class="fav ${later.has(cur)?"on":""}" data-latermodal aria-pressed="${later.has(cur)}">${later.has(cur)?"Na lista para depois":"Assistir mais tarde"}</button> <button class="fav seenb ${seen.has(cur)?"on":""}" data-seenm aria-pressed="${seen.has(cur)}">${seen.has(cur)?"Assistido":"Marcar como assistido"}</button> <button class="fav ${on?"on":""}" data-fav aria-pressed="${on}">${on?"Favoritado":"Favoritar"}</button> <button class="fav" data-share>Compartilhar</button></div>`;
 }
-function closeModal(){$("ov").classList.remove("open")}
+function closeModal(){$("ov").classList.remove("open");hashAnime(null)}
 
 $("q").addEventListener("input",e=>{query=e.target.value;lim=60;renderGrid(1)});
 $("tabs").addEventListener("click",e=>{const b=e.target.closest("[data-t]");if(!b)return;tab=b.dataset.t;lim=60;renderTabs();renderGrid(1)});
@@ -158,6 +187,10 @@ if(e.target===$("ov")||e.target.closest(".close"))return closeModal();
 const so=e.target.closest("[data-open]");if(so){cur=+so.dataset.open;mtab="similar";drawModal();$("ov").scrollTop=0;$("modal").scrollTop=0;return}
 const m=e.target.closest("[data-m]");if(m){mtab=m.dataset.m;drawModal();return}
 const st=e.target.closest("[data-star]");if(st){const n=+st.dataset.star;rate[cur]===n?delete rate[cur]:rate[cur]=n;saveRate();drawModal();renderGrid();return}
+if(e.target.closest("[data-epp]")){setEp(cur,epAtual(cur)+1);drawModal();renderGrid();return}
+if(e.target.closest("[data-epm]")){setEp(cur,epAtual(cur)-1);drawModal();renderGrid();return}
+if(e.target.closest("[data-epdone]")){watching.delete(cur);saveWatch();if(!seen.has(cur))toggleSeen(cur);drawModal();renderTabs();renderGrid();return}
+const sh=e.target.closest("[data-share]");if(sh){compartilhar(cur,sh);return}
 if(e.target.closest("[data-latermodal]")){toggleLater(cur);drawModal();return}
 if(e.target.closest("[data-watching]")){watching.has(cur)?watching.delete(cur):watching.add(cur);if(watching.has(cur))dropLater(cur);saveWatch();drawModal();renderTabs();renderGrid();return}
 if(e.target.closest("[data-seenm]")){toggleSeen(cur);drawModal();return}
@@ -190,6 +223,10 @@ if(document.querySelectorAll)document.querySelectorAll(".w-go").forEach(b=>b.onc
 if($("wlist"))$("wlist").onclick=()=>{$("enter").onclick();tab="Favoritos";lim=60;renderTabs();renderGrid(1)};
 if(typeof window!=="undefined"&&!(typeof matchMedia==="function"&&matchMedia("(prefers-reduced-motion:reduce)").matches))$("welcome").addEventListener("pointermove",e=>{$("scene").style.transform=`scale(1.06) translate(${(e.clientX/innerWidth-.5)*-16}px,${(e.clientY/innerHeight-.5)*-9}px)`});
 renderTabs();renderGrid();updateProg();$("enter").focus();
+// link direto para um anime: ...#a=123 abre a janela dele; pular a entrada
+function linkAnime(){const m=/^#a=(\d+)$/.exec(location.hash);return m&&A[+m[1]]&&!A[+m[1]].hid?+m[1]:null}
+(function(){const i=linkAnime();if(i===null)return;$("enter").onclick();openModal(i)})();
+window.addEventListener("hashchange",()=>{const i=linkAnime();if(i!==null){if(cur!==i||!$("ov").classList.contains("open")){cur=i;mtab="sinopse";drawModal();$("ov").classList.add("open")}}else if(!location.hash)$("ov").classList.remove("open")});
 
 // botão "Filtros": abre e fecha o painel de filtros
 $("ftog").addEventListener("click",()=>{const p=$("fpanel"),c=p.classList.toggle("closed");$("ftog").setAttribute("aria-expanded",String(!c))});

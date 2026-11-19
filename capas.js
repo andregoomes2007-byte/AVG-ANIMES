@@ -19,7 +19,7 @@ function enhanceModal(){
     var mm=el("p","mmeta");[a.y,a.s,epTxt(a)].filter(Boolean).forEach(function(t){mm.appendChild(el("span",null,t))});info.appendChild(mm);
     if(a.mr){var sc=el("div","mscore");sc.appendChild(el("b",null,"★ "+a.mr));sc.appendChild(el("span",null,a.mk?"#"+a.mk+" no ranking do MyAnimeList":"nota no MyAnimeList"));info.appendChild(sc)}
     var tg=el("div","tags");(a.g||[]).forEach(function(g){tg.appendChild(el("span",null,g))});info.appendChild(tg);
-    body.querySelectorAll(":scope > .stars, :scope > .fav").forEach(function(n){act.appendChild(n)});
+    body.querySelectorAll(":scope > .stars, :scope > .epbox, :scope > .fav").forEach(function(n){act.appendChild(n)});
     top.appendChild(close);top.appendChild(box);top.appendChild(info);top.appendChild(act);
     m.insertBefore(top,h);h.remove();
     if(art&&art.tagName==="IMG")upgrade(art,a)}catch(e){}}
